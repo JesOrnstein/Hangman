@@ -1,5 +1,6 @@
 ﻿using Hangman.Core;
 using Hangman.IO;
+using System;
 
 /*
   Startar spelet Hänga Gubbe.
@@ -12,14 +13,8 @@ namespace Hangman;
 
 internal static class Program
 {
-    private static async Task Main()
+    public static Main()
     {
-        Console.OutputEncoding = System.Text.Encoding.UTF8; // så ÅÄÖ visas rätt
-
-        var wordProvider = new RandomWordProvider();
-        var game = new Game(maxMistakes: 6);
-        var ui = new ConsoleUi(game, wordProvider);
-
-        await ui.RunAsync();
+        
     }
 }

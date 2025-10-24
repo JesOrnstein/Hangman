@@ -1,4 +1,4 @@
-﻿namespace Hangman.Core;
+﻿
 
 /*
   En enkel enum som håller koll på spelets status:
@@ -7,9 +7,12 @@
   - Lost = spelaren förlorade
 */
 
-public enum GameStatus
+namespace Hangman.Core
 {
-    InProgress,
-    Won,
-    Lost
+    public enum GameStatus
+    {
+        InProgress,
+        Won,
+        Lost
+    }
 }

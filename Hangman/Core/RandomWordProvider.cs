@@ -1,4 +1,4 @@
-﻿namespace Hangman.Core;
+﻿
 
 /*
   En enkel ordgenerator som väljer ett slumpmässigt ord
@@ -6,19 +6,15 @@
   Använder .NETs Random för att välja ord.
 */
 
-public sealed class RandomWordProvider : IWordProvider
+namespace Hangman.Core
 {
-    private static readonly string[] Words =
+    public sealed class RandomWordProvider : IWordProvider
     {
-        "BANAN", "PROGRAM", "DATOR", "UTVECKLARE", "ALGORITM", "KOMPILERING",
-        "ÅNGEST", "ÄPPLE", "ÖRN", "SYSTEM", "KONSTRUKTION", "FUNKTION",
-        "INTERFACE", "TRÅD", "ASYNKRON", "HÄNDELSE", "HÄNGAGUBBE", "TESTNING",
-        "LAMBDOR", "LISTA"
-    };
+        // Liten lista för att hålla det minimalt
+        private static readonly string[] Words = { "TEST", "BANAN", "DATOR" };
+        private readonly Random _rng = new();
 
-    private readonly Random _rng = new();
-
-    public string GetWord() => Words[_rng.Next(Words.Length)];
-
-    public string DifficultyName => "Standard";
+        public string GetWord() => Words[_rng.Next(Words.Length)];
+        public string DifficultyName => "Standard";
+    }
 }
