@@ -16,6 +16,9 @@ Lösningen består av tre separata projekt för tydlig ansvarsfördelning:
 
 ---
 
+
+
+
 ### 🧱 Mappstruktur
 
 Hangman/
@@ -32,6 +35,8 @@ Hangman/
 │
 └─ HangmanTest/
 └─ GameTests.cs
+
+
 
 
 ---
