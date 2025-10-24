@@ -13,8 +13,5 @@ namespace Hangman;
 
 internal static class Program
 {
-    public static Main()
-    {
-        
-    }
+    
 }

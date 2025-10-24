@@ -36,6 +36,22 @@ namespace HangmanTest
             Assert.Equal(0, game.Mistakes);      // Inga felökningar
             Assert.Contains('T', game.UsedLetters); // Bokstaven sparas som använd
         }
+
+        [Fact]
+        public void Guess_WrongLetter_ShouldReturnFalseAndIncreaseMistakes()
+        {
+            // Arrange
+            var game = new Game();
+            game.StartNew("TEST");
+
+            // Act
+            var result = game.Guess('A');
+
+            // Assert
+            Assert.False(result);                   // Gissningen ska vara fel
+            Assert.Equal(1, game.Mistakes);         // Ett misstag ska ha registrerats
+            Assert.Contains('A', game.UsedLetters); // Bokstaven ska registreras som använd
+        }
     }
 }
 
