@@ -87,6 +87,55 @@ namespace HangmanTest
                                                     // Extra sanity: inga dubbletter i UsedLetters (HashSet i implementationen)
             Assert.Equal(game.UsedLetters.Count, new HashSet<char>(game.UsedLetters).Count);
         }
+
+        [Fact]
+        public void Guess_AllDistinctLettersGuessed_ShouldSetStatusWon_AndRaiseGameEnded()
+        {
+            // Arrange
+            var game = new Game();
+            game.StartNew("TEST");
+            GameStatus? endedWith = null;
+            int endedCount = 0;
+            game.GameEnded += (_, status) => { endedWith = status; endedCount++; };
+
+            // Act – gissa alla unika bokstäver (T, E, S). T förekommer dubbelt i ordet men gissas bara en gång.
+            Assert.True(game.Guess('T')); // rätt
+            Assert.True(game.Guess('E')); // rätt
+            Assert.True(game.Guess('S')); // rätt → NU ska spelet vara vunnet
+
+            // Assert
+            Assert.Equal(GameStatus.Won, game.Status);          // vinst
+            Assert.Equal(1, endedCount);                        // GameEnded ska ha triggat exakt en gång
+            Assert.Equal(GameStatus.Won, endedWith);            // och med status Won
+            Assert.Equal("TEST", game.GetMaskedWord());         // allt synligt
+        }
+
+        [Fact]
+        public void Guess_ReachingMaxMistakes_ShouldSetStatusLost_AndRaiseGameEnded()
+        {
+            // Arrange
+            var game = new Game(maxMistakes: 2); // lågt för snabb förlust i test
+            game.StartNew("TEST");
+            GameStatus? endedWith = null;
+            int endedCount = 0;
+            game.GameEnded += (_, status) => { endedWith = status; endedCount++; };
+
+            // Act – två felgissningar
+            Assert.False(game.Guess('A')); // fel
+            Assert.False(game.Guess('B')); // fel → NU ska spelet vara förlorat
+
+            // Assert
+            Assert.Equal(GameStatus.Lost, game.Status);         // förlust
+            Assert.Equal(0, game.AttemptsLeft);                 // inga försök kvar
+            Assert.Equal(1, endedCount);                        // GameEnded exakt en gång
+            Assert.Equal(GameStatus.Lost, endedWith);           // och med status Lost
+
+            // Extra: efter slut ska vidare gissningar inte ändra något
+            var mistakesBefore = game.Mistakes;
+            Assert.False(game.Guess('C'));                      // ignoreras
+            Assert.Equal(mistakesBefore, game.Mistakes);        // oförändrat
+        }
+
     }
 }
 
