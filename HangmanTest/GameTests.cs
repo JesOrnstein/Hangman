@@ -15,9 +15,10 @@ namespace HangmanTest
             game.StartNew("Test");
 
             // Assert
-            Assert.Equal(GameStatus.InProgress, game.Status);
-            Assert.Equal("TEST", game.Secret);
-            Assert.Equal(0, game.Mistakes);
+            Assert.Equal(GameStatus.InProgress, game.Status);  // Spelet ska starta i "pågående"-läge
+            Assert.Equal("TEST", game.Secret);                 // Ordet sparas i versaler
+            Assert.Equal(0, game.Mistakes);                    // Inga fel vid start
+            Assert.Empty(game.UsedLetters);                    // Inga bokstäver gissade ännu
         }
 
         [Fact]
