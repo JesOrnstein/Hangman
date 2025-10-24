@@ -52,6 +52,21 @@ namespace HangmanTest
             Assert.Equal(1, game.Mistakes);         // Ett misstag ska ha registrerats
             Assert.Contains('A', game.UsedLetters); // Bokstaven ska registreras som använd
         }
+
+        [Fact]
+        public void GetMaskedWord_ShouldHideUnrevealedLetters_AndShowCorrectGuesses()
+        {
+            // Arrange
+            var game = new Game();
+            game.StartNew("TEST");
+            game.Guess('T'); // Bara T är gissad
+
+            // Act
+            var masked = game.GetMaskedWord();
+
+            // Assert
+            Assert.Equal("T__T", masked); // Visar T, döljer resten
+        }
     }
 }
 

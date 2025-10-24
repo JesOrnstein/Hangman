@@ -82,8 +82,18 @@ namespace Hangman.Core
             return false;
         }
 
-        // Lämnas till kommande test
-        public string GetMaskedWord() => throw new NotImplementedException();
+        public string GetMaskedWord()
+        {
+            if (string.IsNullOrEmpty(_secret)) return string.Empty;
+            // Visa bokstaven om den är gissad, annars '_'
+            var chars = new char[_secret.Length];
+            for (int i = 0; i < _secret.Length; i++)
+            {
+                var ch = _secret[i];
+                chars[i] = _used.Contains(ch) ? ch : '_';
+            }
+            return new string(chars);
+        }
     }
 }
 
