@@ -16,14 +16,10 @@ namespace Hangman.Core
     public sealed class Game
     {
         private string _secret = string.Empty;
-
-        public GameStatus Status { get; private set; } = GameStatus.InProgress;
-        public int Mistakes { get; private set; } = 0;
-        public int AttemptsLeft => _maxMistakes - Mistakes;
-        public IReadOnlyCollection<char> UsedLetters { get; private set; } = Array.Empty<char>();
-        public string Secret => _secret;
-
         private readonly int _maxMistakes;
+
+        // NYTT: intern samling för använda bokstäver
+        private readonly HashSet<char> _used = new();
 
         public Game(int maxMistakes = 6)
         {
@@ -31,7 +27,15 @@ namespace Hangman.Core
             _maxMistakes = maxMistakes;
         }
 
-        // Events finns redan här så att du kan skriva tester mot dem senare om du vill
+        public GameStatus Status { get; private set; } = GameStatus.InProgress;
+        public int Mistakes { get; private set; } = 0;
+        public int AttemptsLeft => _maxMistakes - Mistakes;
+
+        // ÄNDRAT: expose den interna hashen som read-only collection
+        public IReadOnlyCollection<char> UsedLetters => _used;
+
+        public string Secret => _secret;
+
         public event EventHandler<char>? LetterGuessed;
         public event EventHandler<char>? WrongLetterGuessed;
         public event EventHandler<GameStatus>? GameEnded;
@@ -41,18 +45,47 @@ namespace Hangman.Core
             if (string.IsNullOrWhiteSpace(word))
                 throw new ArgumentException("Secret word cannot be empty", nameof(word));
 
-            _secret = word.ToUpperInvariant();   // Räcker för första testerna ("Test" -> "TEST")
+            _secret = word.ToUpperInvariant();   // "Test" -> "TEST"
             Status = GameStatus.InProgress;      // Startläge
             Mistakes = 0;                        // Nollställ fel
-            UsedLetters = Array.Empty<char>();   // Inga gissningar ännu
+            _used.Clear();                       // NYTT: nollställ använda bokstäver
         }
 
-        // IMPLEMENTERAS SEN när testerna skrivs
-        public bool Guess(char letter) => throw new NotImplementedException();
+        // MINSTA MÖJLIGA för att klara testet:
+        public bool Guess(char letter)
+        {
+            if (Status != GameStatus.InProgress) return false;
 
-        // IMPLEMENTERAS SEN när testerna skrivs
+            var c = char.ToUpperInvariant(letter);
+
+            // om vi redan gissat den här bokstaven – räkna det inte som fel
+            if (_used.Contains(c)) return _secret.Contains(c);
+
+            _used.Add(c);
+
+            if (_secret.Contains(c))
+            {
+                // event (frivilligt för testet, men bra att ha)
+                LetterGuessed?.Invoke(this, c);
+                return true;
+            }
+
+            Mistakes++;
+            WrongLetterGuessed?.Invoke(this, c);
+
+            if (Mistakes >= _maxMistakes)
+            {
+                Status = GameStatus.Lost;
+                GameEnded?.Invoke(this, Status);
+            }
+
+            return false;
+        }
+
+        // Lämnas till kommande test
         public string GetMaskedWord() => throw new NotImplementedException();
     }
 }
+
 
 
