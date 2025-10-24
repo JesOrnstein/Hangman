@@ -67,6 +67,26 @@ namespace HangmanTest
             // Assert
             Assert.Equal("T__T", masked); // Visar T, döljer resten
         }
+
+        [Fact]
+        public void Guess_SameLetterTwice_ShouldNotIncreaseMistakes()
+        {
+            // Arrange
+            var game = new Game();
+            game.StartNew("TEST");
+
+            // Act
+            var first = game.Guess('A');  // fel gissning
+            var second = game.Guess('A'); // samma felbokstav igen
+
+            // Assert
+            Assert.False(first);                 // första var fel
+            Assert.False(second);                // andra ska inte plötsligt bli rätt
+            Assert.Equal(1, game.Mistakes);      // får INTE öka till 2
+            Assert.Contains('A', game.UsedLetters); // 'A' finns i loggen
+                                                    // Extra sanity: inga dubbletter i UsedLetters (HashSet i implementationen)
+            Assert.Equal(game.UsedLetters.Count, new HashSet<char>(game.UsedLetters).Count);
+        }
     }
 }
 
