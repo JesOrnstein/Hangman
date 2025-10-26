@@ -7,4 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Hangman.Core\Hangman.Core.csproj" />
+  </ItemGroup>
+
 </Project>
