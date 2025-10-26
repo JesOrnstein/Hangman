@@ -74,6 +74,8 @@ HashSet, IEnumerable och immutabla collections
 
 Clean architecture & separation of concerns
 
+API - https://random-word-api.herokuapp.com/home
+
 ---
 
 ### 🧩 Avancerade C#-koncept som används

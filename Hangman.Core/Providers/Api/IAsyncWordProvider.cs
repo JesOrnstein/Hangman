@@ -9,7 +9,7 @@ using System.Threading.Tasks;
   Används för källor som kräver nätverksanrop eller fil-IO.
 */
 
-namespace Hangman.Core.Providers
+namespace Hangman.Core.Providers.Api
 {
     public interface IAsyncWordProvider
     {

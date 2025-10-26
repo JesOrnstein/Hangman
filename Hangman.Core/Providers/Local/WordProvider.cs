@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hangman.Core.Providers.Local;
+using System;
 
 namespace Hangman.Core
 {
