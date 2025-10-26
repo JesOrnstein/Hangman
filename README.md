@@ -18,7 +18,25 @@ Lösningen består av tre separata projekt för tydlig ansvarsfördelning:
 
 ### 🧱 Mappstruktur
 ```
-Hangman/ ├─ Hangman.Core/ │ ├─ Game.cs │ ├─ GameStatus.cs │ ├─ Providers/ │ │ ├─ Api/ // Asynkron API-hämtning │ │ └─ Local/ // Lokala ordlistor │ ├─ Hangman.Console/ │ ├─ Program.cs │ └─ ConsoleUi.cs │ └─ HangmanTest/ └─ GameTests.cs
+Hangman/
+├─ Hangman.Core/
+│ ├─ Game.cs
+│ ├─ GameStatus.cs
+│ ├─ Providers/
+│ │ ├─ Api/
+│ │ │ ├─ ApiDifficulty.cs
+│ │ │ ├─ ApiWordProvider.cs
+│ │ │ └─ IAsyncWordProvider.cs
+│ │ └─ Local/
+│ │   ├─ IWordProvider.cs
+│ │   └─ WordProvider.cs
+│
+├─ Hangman.Console/
+│ ├─ Program.cs
+│ └─ ConsoleUi.cs
+│
+└─ HangmanTest/
+  └─ GameTests.cs
 ```
 ---
 
