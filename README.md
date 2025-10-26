@@ -203,6 +203,7 @@ public interface IStatisticsExporter
     Task ExportAsync(string path, CancellationToken ct = default);
 }
 
+---
 
 // Gammal v1.0 checklista
 1. Högkvalietet av kod 
