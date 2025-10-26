@@ -196,9 +196,6 @@ namespace Hangman.IO
             }
         }
 
-        // --- ÄNDRING: SelectMaxMistakes() är borttagen ---
-
-
         // --- ÄNDRING: PlayNewGameAsync uppdaterad ---
         private async Task PlayNewGameAsync()
         {
@@ -211,7 +208,7 @@ namespace Hangman.IO
                 return; // Gå tillbaka till huvudmenyn
             }
 
-            // 3. Antal misstag är nu hårdkodat till 6
+            // 3. Antal misstag är nu hårdkodat till 6. Denna borde flyttas till logic i Hangman.Core.Game för att dölja logic?
             int maxMistakes = 6;
 
             // 4. Skapa spelet
