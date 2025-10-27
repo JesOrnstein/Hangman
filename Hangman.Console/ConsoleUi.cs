@@ -244,11 +244,13 @@ namespace Hangman.IO
         {
             Console.Clear();
             Console.WriteLine("--- HIGHSCORES ---");
-            Console.WriteLine("Hämtar globala topp 5-resultat...");
+            // ÄNDRAD TEXT: 5 -> 10
+            Console.WriteLine("Hämtar globala topp 10-resultat...");
 
             try
             {
-                var topScores = await _statisticsService.GetGlobalTopScoresAsync(5);
+                // ÄNDRAD KOD: 5 -> 10
+                var topScores = await _statisticsService.GetGlobalTopScoresAsync(10);
 
                 if (!topScores.Any())
                 {

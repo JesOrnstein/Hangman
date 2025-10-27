@@ -30,6 +30,8 @@ namespace Hangman.Core.Providers.Db
                     s.PlayerName.ToLower() == newScore.PlayerName.ToLower() &&
                     s.Difficulty == newScore.Difficulty);
 
+                bool saved = false; // Håll koll på om vi faktiskt sparade något
+
                 if (existingScore != null)
                 {
                     if (newScore.ConsecutiveWins > existingScore.ConsecutiveWins)
@@ -39,6 +41,7 @@ namespace Hangman.Core.Providers.Db
                         newScore.Id = existingScore.Id;
                         context.Highscores.Update(existingScore);
                         await context.SaveChangesAsync();
+                        saved = true;
                     }
                 }
                 else
@@ -46,7 +49,36 @@ namespace Hangman.Core.Providers.Db
                     // NY: Lägg till den nya posten
                     context.Highscores.Add(newScore);
                     await context.SaveChangesAsync();
+                    saved = true;
                 }
+
+                // NYTT: Rensa listan om vi har lagt till/uppdaterat något
+                if (saved)
+                {
+                    await PruneScoresAsync(context, newScore.Difficulty, 10);
+                }
+            }
+        }
+
+        /// <summary>
+        /// NY PRIVAT HJÄLPMETOD: Ser till att endast de X bästa poängen
+        /// för en given svårighetsgrad finns kvar i databasen.
+        /// </summary>
+        private async Task PruneScoresAsync(HangmanDbContext context, WordDifficulty difficulty, int topN)
+        {
+            // Hämta alla poäng för denna svårighetsgrad, sorterade
+            var scores = await context.Highscores
+                .Where(s => s.Difficulty == difficulty)
+                .OrderByDescending(s => s.ConsecutiveWins)
+                .ToListAsync();
+
+            // Om det finns fler än 'topN' poäng...
+            if (scores.Count > topN)
+            {
+                // ...ta bort alla som hamnar utanför topplistan (dvs. hoppa över de 'topN' bästa)
+                var scoresToRemove = scores.Skip(topN);
+                context.Highscores.RemoveRange(scoresToRemove);
+                await context.SaveChangesAsync();
             }
         }
 
