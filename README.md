@@ -3,7 +3,6 @@
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![WPF](https://img.shields.io/badge/WPF-MVVM-blue)](#-arkitektur)
 [![xUnit](https://img.shields.io/badge/Tests-xUnit-5A2A83)](#-testning)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 Ett avancerat C#-projekt byggt som ett komplett **Hänga Gubbe**-spel, med stöd för både **konsol** och ett grafiskt **WPF (MVVM)**-gränssnitt.  
 Fokus: **Clean Architecture (Separation of Concerns)**, **MVVM**, **TDD**, **i18n**.
@@ -129,15 +128,15 @@ dotnet run
 ## 🧱 Arkitektur
 
 ```mermaid
-flowchart LR
-    UI_WPF[WPF Views (XAML)] --> VM[ViewModels (MVVM)]
-    UI_Console[Console Renderer/Input] --> C[Controllers]
-    VM --> Core[Hangman.Core]
-    C --> Core
-    Core --> ProvidersDB[Providers: Db (EF Core/SQLite)]
-    Core --> ProvidersApi[Providers: Api (HttpClient)]
-    Core --> ProvidersLocal[Providers: Local]
-    Core --> Localization[IUiStrings (i18n)]
+graph LR
+  UI_WPF["WPF Views (XAML)"] --> VM["ViewModels (MVVM)"]
+  UI_Console["Console Renderer/Input"] --> C["Controllers"]
+  VM --> Core["Hangman.Core"]
+  C --> Core
+  Core --> ProvidersDB["Providers: Db (EF Core/SQLite)"]
+  Core --> ProvidersApi["Providers: Api (HttpClient)"]
+  Core --> ProvidersLocal["Providers: Local"]
+  Core --> Localization["IUiStrings (i18n)"]
 ```
 
 - **MVVM (WPF)** – View (XAML) ↔ ViewModel (`INotifyPropertyChanged`, `ICommand`) ↔ Model (Core).
