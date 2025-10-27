@@ -24,7 +24,6 @@ Fokus: **Clean Architecture (Separation of Concerns)**, **MVVM**, **TDD**, **i18
 - [Skärmbilder](#-skärmbilder)
 - [Tillgångar (Sprites & Bilder)](#-tillgångar-sprites--bilder)
 - [Katalog över viktiga filer](#-katalog-över-viktiga-filer)
-- [Licens](#-licens)
 
 ---
 
