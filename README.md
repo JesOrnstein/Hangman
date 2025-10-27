@@ -182,13 +182,11 @@ dotnet test
 
 ## 🖼️ Skärmbilder
 
-> Byt ut platshållarna nedan mot riktiga bilder från din miljö.
+- **Hangman.WPF – GameView**  
+  ![WPF GameView](docs/images/wpf-gameview.png)
 
-- `Hangman.WPF` – **GameView**  
-  `docs/images/wpf-gameview.png`
-
-- `Hangman.Console` – **Spelrunda**  
-  `docs/images/console-round.png`
+- **Hangman.Console – Spelrunda**  
+  ![Console Round](docs/images/console-round.png)
 
 ---
 
