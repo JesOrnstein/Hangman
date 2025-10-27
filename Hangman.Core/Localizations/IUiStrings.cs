@@ -151,5 +151,33 @@ namespace Hangman.Core.Localizations
         // --- NYTT FÖR TIMER ---
         string RoundTimerDisplay(int seconds);
         string RoundTimerExpired { get; }
+
+        // ========== NYA STRÄNGAR FÖR WPF ==========
+        string ButtonBackToMenu { get; }
+        string MainMenuWpfTitle { get; }
+        string LanguageSelectorTitle { get; }
+        string LanguageButtonSwedish { get; }
+        string LanguageButtonEnglish { get; }
+        string SettingsTitle { get; }
+        string SettingsLabelDifficulty { get; }
+        string SettingsLabelWordList { get; }
+        string SettingsButtonStart { get; }
+        string AddWordLabelLanguage { get; }
+        string AddWordButtonSave { get; }
+        string HighscoreHeaderName { get; }
+        string HighscoreHeaderWins { get; }
+        string HighscoreHeaderDifficulty { get; }
+        string GameButtonGiveUp { get; }
+        string GameButtonPlayAgain { get; }
+        string GameButtonSaveAndExit { get; }
+        string TournamentButtonNextRound { get; }
+        string TournamentButtonCancel { get; }
+        string ErrorApiGeneric { get; }
+        string HighscoreStatusLoading { get; }
+        string HighscoreStatusError(string message);
+        string HighscoreStatusNoneFoundWpf { get; }
+        string TournamentHeaderLives { get; }
+        string TournamentHeaderWins { get; }
+        // ==========================================
     }
 }

@@ -44,18 +44,20 @@
                 <StackPanel Grid.Column="0" HorizontalAlignment="Left">
                     <TextBlock Text="{Binding Player1.Name}" FontSize="18" FontWeight="Bold"/>
                     <TextBlock FontSize="16">
-                        <Run Text="Liv: "/>
+                        <Run Text="{Binding Strings.TournamentHeaderLives}"/>
                         <Run Text="{Binding Player1.Lives}" FontWeight="Bold" Foreground="Crimson"/>
-                        <Run Text=" | Vinster: "/>
+                        <Run Text=" | "/>
+                        <Run Text="{Binding Strings.TournamentHeaderWins}"/>
                         <Run Text="{Binding Player1.Wins}" FontWeight="Bold" Foreground="Green"/>
                     </TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                     <TextBlock Text="{Binding Player2.Name}" FontSize="18" FontWeight="Bold" TextAlignment="Right"/>
                     <TextBlock FontSize="16" TextAlignment="Right">
-                        <Run Text="Vinster: "/>
+                        <Run Text="{Binding Strings.TournamentHeaderWins}"/>
                         <Run Text="{Binding Player2.Wins}" FontWeight="Bold" Foreground="Green"/>
-                        <Run Text=" | Liv: "/>
+                        <Run Text=" | "/>
+                        <Run Text="{Binding Strings.TournamentHeaderLives}"/>
                         <Run Text="{Binding Player2.Lives}" FontWeight="Bold" Foreground="Crimson"/>
                     </TextBlock>
                 </StackPanel>
@@ -67,6 +69,7 @@
             <TextBlock Grid.Row="1"
                        FontSize="20" FontWeight="Bold" Foreground="Blue" HorizontalAlignment="Left">
                 <Run Text="{Binding ActivePlayerText}"/>
+                <Run Text=": "/>
                 <Run Text="{Binding CurrentGuesserName}"/>
             </TextBlock>
 
@@ -125,15 +128,15 @@
                 <TextBlock Text="{Binding TournamentStatusMessage}" FontSize="20" FontWeight="Bold"
                            HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
 
-                <Button Content="Nästa Runda" Command="{Binding NextRoundCommand}" 
+                <Button Content="{Binding Strings.TournamentButtonNextRound}" Command="{Binding NextRoundCommand}" 
                         HorizontalAlignment="Center" Padding="10" Margin="0,20,0,0" FontSize="16"/>
             </StackPanel>
 
-            <Button Grid.Row="7" Content="Avbryt / Till menyn"
+            <Button Grid.Row="7" Content="{Binding Strings.TournamentButtonCancel}"
                     Command="{Binding BackToMenuCommand}"
                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
                     Margin="0,15" Padding="5" Background="LightGray"/>
-            <Button Content="Tillbaka till Menyn"
+            <Button Content="{Binding Strings.ButtonBackToMenu}"
                     Command="{Binding BackToMenuCommand}"
                     Padding="10" FontSize="16" Margin="570,20,10,9" Grid.Row="7"/>
 

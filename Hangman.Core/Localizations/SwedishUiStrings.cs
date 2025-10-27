@@ -196,5 +196,33 @@ namespace Hangman.Core.Localizations
         // --- NYTT FÖR TIMER ---
         public string RoundTimerDisplay(int seconds) => $"Tid kvar: {seconds:D2}s";
         public string RoundTimerExpired => "Tiden är ute!";
+
+        // ========== NYA STRÄNGAR FÖR WPF ==========
+        public string ButtonBackToMenu => "Tillbaka till Menyn";
+        public string MainMenuWpfTitle => "WPF HANGMAN";
+        public string LanguageSelectorTitle => "Välj språk / Select language";
+        public string LanguageButtonSwedish => "Svenska";
+        public string LanguageButtonEnglish => "English";
+        public string SettingsTitle => "Spelinställningar";
+        public string SettingsLabelDifficulty => "Svårighetsgrad:";
+        public string SettingsLabelWordList => "Ordlista:";
+        public string SettingsButtonStart => "Starta Spel";
+        public string AddWordLabelLanguage => "Språk:";
+        public string AddWordButtonSave => "Spara Ord";
+        public string HighscoreHeaderName => "Namn";
+        public string HighscoreHeaderWins => "Vinster i rad";
+        public string HighscoreHeaderDifficulty => "Svårighetsgrad";
+        public string GameButtonGiveUp => "Ge upp / Till menyn";
+        public string GameButtonPlayAgain => "Spela Igen";
+        public string GameButtonSaveAndExit => "Avsluta (Spara & Gå till Menyn)";
+        public string TournamentButtonNextRound => "Nästa Runda";
+        public string TournamentButtonCancel => "Avbryt / Till menyn";
+        public string ErrorApiGeneric => "API-fel";
+        public string HighscoreStatusLoading => "Hämtar highscores...";
+        public string HighscoreStatusError(string message) => $"Kunde inte ladda highscores: {message}";
+        public string HighscoreStatusNoneFoundWpf => "Inga highscores hittades.";
+        public string TournamentHeaderLives => "Liv: ";
+        public string TournamentHeaderWins => "Vinster: ";
+        // ==========================================
     }
 }

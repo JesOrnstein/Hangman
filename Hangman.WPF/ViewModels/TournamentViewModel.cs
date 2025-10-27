@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Hangman.Core.Localizations; // <-- NY USING
+using Hangman.Core.Localizations;
 
 namespace Hangman.WPF.ViewModels
 {
-    // NY FIL: Kombinerar turneringslogik med spellogik (inspirerad av GameViewModel)
     public class TournamentViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
@@ -20,9 +19,8 @@ namespace Hangman.WPF.ViewModels
         private readonly Game _game;
         private readonly TwoPlayerGame _tournament;
         private readonly DispatcherTimer _timer;
-        private readonly LocalizationProvider _strings; // <-- NYTT FÄLT
+        private readonly LocalizationProvider _strings;
 
-        // --- Animationsramar (från ConsoleRenderer) ---
         private static readonly string[] _animFrames =
         {
             "*creak...* ", "* *creak...* ", "  *creak...* ", "   *creak...* ", "    *creak...* ", "     *creak...*",
@@ -30,9 +28,6 @@ namespace Hangman.WPF.ViewModels
         };
         private const int AnimFrameCount = 12;
 
-        // --- Bindningsbara Egenskaper (Turnering) ---
-
-        // NY PROPERTY: Exponera strängarna för XAML
         public LocalizationProvider Strings { get; }
 
         public Player Player1 => _tournament.Player1;
@@ -41,13 +36,12 @@ namespace Hangman.WPF.ViewModels
         private string _currentGuesserName = "";
         public string CurrentGuesserName { get => _currentGuesserName; set { _currentGuesserName = value; OnPropertyChanged(); } }
 
-        // NY PROPERTY: Binder till den aktiva spelaren
-        public string ActivePlayerText => _strings.RoundActivePlayerWithLives(CurrentGuesserName, 0).Split(':')[0]; // "Aktiv spelare:"
+        // Anpassad för att hämta "Aktiv spelare:"
+        public string ActivePlayerText => _strings.RoundActivePlayer.Replace(":", "");
 
         private string _tournamentStatusMessage = "";
         public string TournamentStatusMessage { get => _tournamentStatusMessage; set { _tournamentStatusMessage = value; OnPropertyChanged(); } }
 
-        // --- Bindningsbara Egenskaper (Spelomgång, från GameViewModel) ---
         private string _maskedWord = "Laddar...";
         public string MaskedWord { get => _maskedWord; set { _maskedWord = value; OnPropertyChanged(); } }
 
@@ -60,10 +54,8 @@ namespace Hangman.WPF.ViewModels
         private int _secondsLeft = 60;
         public int SecondsLeft { get => _secondsLeft; set { _secondsLeft = value; OnPropertyChanged(); } }
 
-        // NY PROPERTY: Formaterar timer-texten
         public string TimerText => _strings.RoundTimerDisplay(SecondsLeft);
 
-        // NY PROPERTY FÖR ANIMATION
         private string _creakAnimationText = "";
         public string CreakAnimationText { get => _creakAnimationText; set { _creakAnimationText = value; OnPropertyChanged(); } }
 
@@ -82,45 +74,41 @@ namespace Hangman.WPF.ViewModels
 
         public char[] KeyboardLetters { get; } = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".ToCharArray();
 
-        // UPPDATERAD KONSTRUKTOR
         public TournamentViewModel(MainViewModel mainViewModel, IAsyncWordProvider provider, GameSettings settings, LocalizationProvider strings)
         {
             _mainViewModel = mainViewModel;
             _wordProvider = provider;
-            _strings = strings; // Spara för C#-logik
-            Strings = strings;  // Exponera för XAML
+            _strings = strings;
+            Strings = strings;
 
             _tournament = new TwoPlayerGame(settings.PlayerName, settings.PlayerName2, _wordProvider);
             _game = new Game(6);
 
-            // Prenumerera på events
             _game.LetterGuessed += OnGameUpdated;
             _game.WrongLetterGuessed += OnGameUpdated;
             _game.GameEnded += OnRoundEnded;
 
-            // Kommandon
             GuessCommand = new RelayCommand(MakeGuess, CanGuess);
             BackToMenuCommand = new RelayCommand(_ => _mainViewModel.NavigateToMenu());
             NextRoundCommand = new RelayCommand(async _ => await StartNewRound());
 
-            // Timer
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _timer.Tick += Timer_Tick;
 
+            MaskedWord = _strings.FeedbackFetchingWord("..."); // ÄNDRAD
             Task.Run(StartNewRound);
         }
 
-        // UPPDATERAD LOGIK: Använder _strings
         private async Task StartNewRound()
         {
             IsRoundInProgress = true;
             TournamentStatusMessage = string.Empty;
-            MaskedWord = _strings.FeedbackFetchingWord("..."); // "Hämtar ord..."
+            MaskedWord = _strings.FeedbackFetchingWord("...");
             UsedLetters = "";
             GallowsImageSource = "/Images/stage_0.png";
             CreakAnimationText = string.Empty;
             CurrentGuesserName = _tournament.CurrentPlayerName;
-            OnPropertyChanged(nameof(ActivePlayerText)); // Uppdatera "Aktiv spelare:"-texten
+            OnPropertyChanged(nameof(ActivePlayerText));
 
             OnPropertyChanged(nameof(Player1));
             OnPropertyChanged(nameof(Player2));
@@ -132,27 +120,25 @@ namespace Hangman.WPF.ViewModels
             }
             catch (NoCustomWordsFoundException ex)
             {
-                // ÄNDRAD
                 MessageBox.Show(
                     _strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language),
-                    _strings.SelectWordSourceTitle // "Ordlistefel"
+                    _strings.SelectWordSourceTitle
                 );
                 _mainViewModel.NavigateToMenu();
                 return;
             }
-            catch (InvalidOperationException) // Turneringen är slut
+            catch (InvalidOperationException)
             {
                 EndTournament();
                 return;
             }
             catch (Exception ex)
             {
-                // ÄNDRAD
                 MessageBox.Show(
                     _strings.ErrorCouldNotFetchTournamentWord(ex.Message),
-                    "API-fel" // Kan läggas i IUiStrings
+                    _strings.ErrorApiGeneric // ÄNDRAD
                 );
-                _game.StartNew("APIERROR"); // Fallback
+                _game.StartNew("APIERROR");
             }
 
             UpdateUiProperties();
@@ -160,7 +146,6 @@ namespace Hangman.WPF.ViewModels
             _timer.Start();
         }
 
-        // UPPDATERAD LOGIK: Använder _strings
         private void EndTournament()
         {
             IsTournamentInProgress = false;
@@ -170,22 +155,21 @@ namespace Hangman.WPF.ViewModels
 
             if (_tournament.TournamentStatus == GameStatus.Draw)
             {
-                TournamentEndMessage = _strings.FeedbackTournamentDraw; // ÄNDRAD
+                TournamentEndMessage = _strings.FeedbackTournamentDraw;
             }
             else
             {
                 Player? winner = _tournament.GetWinner();
                 if (winner != null)
                 {
-                    TournamentEndMessage = _strings.FeedbackTournamentWinner(winner.Name); // ÄNDRAD
+                    TournamentEndMessage = _strings.FeedbackTournamentWinner(winner.Name);
                 }
                 else
                 {
-                    TournamentEndMessage = _strings.FeedbackTournamentUnexpectedEnd; // ÄNDRAD
+                    TournamentEndMessage = _strings.FeedbackTournamentUnexpectedEnd;
                 }
             }
 
-            // ÄNDRAD (hämtar strängar)
             TournamentEndMessage += $"\n\n{_strings.FeedbackTournamentFinalWins}\n" +
                                     $"{_strings.FeedbackTournamentPlayerWins(Player1.Name, Player1.Wins)}\n" +
                                     $"{_strings.FeedbackTournamentPlayerWins(Player2.Name, Player2.Wins)}";
@@ -195,7 +179,7 @@ namespace Hangman.WPF.ViewModels
         private void Timer_Tick(object? sender, EventArgs e)
         {
             SecondsLeft--;
-            OnPropertyChanged(nameof(TimerText)); // Meddela UI om textuppdatering
+            OnPropertyChanged(nameof(TimerText));
 
             int frame = SecondsLeft % AnimFrameCount;
             CreakAnimationText = _animFrames[frame];
@@ -204,14 +188,13 @@ namespace Hangman.WPF.ViewModels
             {
                 _timer.Stop();
                 CreakAnimationText = string.Empty;
-                TournamentStatusMessage = _strings.RoundTimerExpired; // ÄNDRAD
+                TournamentStatusMessage = _strings.RoundTimerExpired;
                 _game.ForceLose();
             }
         }
 
         private bool CanGuess(object? parameter)
         {
-            // ... (logik oförändrad) ...
             if (parameter is char letter)
             {
                 return IsRoundInProgress && !_game.UsedLetters.Contains(letter);
@@ -221,7 +204,6 @@ namespace Hangman.WPF.ViewModels
 
         private void MakeGuess(object? parameter)
         {
-            // ... (logik oförändrad) ...
             if (parameter is char letter)
             {
                 _game.Guess(letter);
@@ -233,7 +215,6 @@ namespace Hangman.WPF.ViewModels
             UpdateUiProperties();
         }
 
-        // UPPDATERAD LOGIK: Använder _strings
         private void OnRoundEnded(object? sender, GameStatus status)
         {
             _timer.Stop();
@@ -244,12 +225,10 @@ namespace Hangman.WPF.ViewModels
 
             if (status == GameStatus.Won)
             {
-                // ÄNDRAD
                 TournamentStatusMessage = $"{CurrentGuesserName} {_strings.RoundWon} {_strings.EndScreenCorrectWord(_game.Secret)}";
             }
             else // Lost
             {
-                // ÄNDRAD (visar bara tiden om det var anledningen)
                 if (string.IsNullOrEmpty(TournamentStatusMessage))
                 {
                     TournamentStatusMessage = $"{CurrentGuesserName} {_strings.RoundLost} {_strings.EndScreenCorrectWord(_game.Secret)}";
@@ -265,7 +244,7 @@ namespace Hangman.WPF.ViewModels
         private void UpdateUiProperties()
         {
             MaskedWord = string.Join(" ", _game.GetMaskedWord().ToCharArray());
-            UsedLetters = $"{_strings.RoundGuessedLetters} {string.Join(", ", _game.UsedLetters.OrderBy(c => c))}"; // ÄNDRAD
+            UsedLetters = $"{_strings.RoundGuessedLetters} {string.Join(", ", _game.UsedLetters.OrderBy(c => c))}";
             GallowsImageSource = $"/Images/stage_{_game.Mistakes}.png";
         }
     }

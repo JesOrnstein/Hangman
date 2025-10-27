@@ -192,5 +192,37 @@ namespace Hangman.WPF.ViewModels
         public string RoundTimerDisplay(int seconds) => _currentStrategy.RoundTimerDisplay(seconds);
         public string RoundTimerExpired => _currentStrategy.RoundTimerExpired;
         #endregion
+
+        // ==================================================================
+        // === ALLA SAKNADE PROPERTIES SOM ORSAKADE FELEN ÄR TILLAGDA HÄR ===
+        // ==================================================================
+
+        #region WPF-Specifika Strängar
+        public string ButtonBackToMenu => _currentStrategy.ButtonBackToMenu;
+        public string MainMenuWpfTitle => _currentStrategy.MainMenuWpfTitle;
+        public string LanguageSelectorTitle => _currentStrategy.LanguageSelectorTitle;
+        public string LanguageButtonSwedish => _currentStrategy.LanguageButtonSwedish;
+        public string LanguageButtonEnglish => _currentStrategy.LanguageButtonEnglish;
+        public string SettingsTitle => _currentStrategy.SettingsTitle;
+        public string SettingsLabelDifficulty => _currentStrategy.SettingsLabelDifficulty;
+        public string SettingsLabelWordList => _currentStrategy.SettingsLabelWordList;
+        public string SettingsButtonStart => _currentStrategy.SettingsButtonStart;
+        public string AddWordLabelLanguage => _currentStrategy.AddWordLabelLanguage;
+        public string AddWordButtonSave => _currentStrategy.AddWordButtonSave;
+        public string HighscoreHeaderName => _currentStrategy.HighscoreHeaderName;
+        public string HighscoreHeaderWins => _currentStrategy.HighscoreHeaderWins;
+        public string HighscoreHeaderDifficulty => _currentStrategy.HighscoreHeaderDifficulty;
+        public string GameButtonGiveUp => _currentStrategy.GameButtonGiveUp;
+        public string GameButtonPlayAgain => _currentStrategy.GameButtonPlayAgain;
+        public string GameButtonSaveAndExit => _currentStrategy.GameButtonSaveAndExit;
+        public string TournamentButtonNextRound => _currentStrategy.TournamentButtonNextRound;
+        public string TournamentButtonCancel => _currentStrategy.TournamentButtonCancel;
+        public string ErrorApiGeneric => _currentStrategy.ErrorApiGeneric;
+        public string HighscoreStatusLoading => _currentStrategy.HighscoreStatusLoading;
+        public string HighscoreStatusError(string message) => _currentStrategy.HighscoreStatusError(message);
+        public string HighscoreStatusNoneFoundWpf => _currentStrategy.HighscoreStatusNoneFoundWpf;
+        public string TournamentHeaderLives => _currentStrategy.TournamentHeaderLives;
+        public string TournamentHeaderWins => _currentStrategy.TournamentHeaderWins;
+        #endregion
     }
 }

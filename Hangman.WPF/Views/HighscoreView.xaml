@@ -7,20 +7,24 @@
              d:DesignHeight="450" d:DesignWidth="800">
 
     <StackPanel Margin="20">
-        <TextBlock Text="Topplistor" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        <TextBlock Text="{Binding Strings.HighscoreTitle}" FontSize="32" FontWeight="Bold" 
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
         <TextBlock Text="{Binding StatusMessage}" FontSize="16" Foreground="Gray" HorizontalAlignment="Center"/>
 
         <ListView ItemsSource="{Binding Highscores}" HorizontalAlignment="Center" Width="500">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Namn" Width="200" DisplayMemberBinding="{Binding PlayerName}"/>
-                    <GridViewColumn Header="Vinster i rad" Width="100" DisplayMemberBinding="{Binding ConsecutiveWins}"/>
-                    <GridViewColumn Header="Svårighetsgrad" Width="150" DisplayMemberBinding="{Binding Difficulty}"/>
+                    <GridViewColumn Header="{Binding DataContext.Strings.HighscoreHeaderName, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                    Width="200" DisplayMemberBinding="{Binding PlayerName}"/>
+                    <GridViewColumn Header="{Binding DataContext.Strings.HighscoreHeaderWins, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                    Width="100" DisplayMemberBinding="{Binding ConsecutiveWins}"/>
+                    <GridViewColumn Header="{Binding DataContext.Strings.HighscoreHeaderDifficulty, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                    Width="150" DisplayMemberBinding="{Binding Difficulty}"/>
                 </GridView>
             </ListView.View>
         </ListView>
 
-        <Button Content="Tillbaka till Menyn" Command="{Binding BackToMenuCommand}" HorizontalAlignment="Center" Margin="0,20" Padding="10"/>
+        <Button Content="{Binding Strings.ButtonBackToMenu}" Command="{Binding BackToMenuCommand}" HorizontalAlignment="Center" Margin="0,20" Padding="10"/>
     </StackPanel>
 </UserControl>
