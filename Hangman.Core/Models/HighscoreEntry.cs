@@ -15,14 +15,6 @@ namespace Hangman.Core.Models
         public required int ConsecutiveWins { get; set; }
         public required WordDifficulty Difficulty { get; set; }
 
-        // Plan (pseudocode):
-        // 1. Problem: CS8618 - required properties are not set by the parameterless constructor.
-        // 2. Solution: Ensure the parameterless constructor sets non-null default values for all required properties.
-        // 3. Mark the constructor with [SetsRequiredMembers] to inform the compiler that required members are initialized.
-        // 4. Set: PlayerName = string.Empty; ConsecutiveWins = 0; Difficulty = default(WordDifficulty);
-        // 5. Keep the other constructor (that sets real values) unchanged.
-
-        // Löser CS8618/CS9035 för EF Core och deserialisering
         [SetsRequiredMembers]
         public HighscoreEntry()
         {

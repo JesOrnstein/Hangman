@@ -13,10 +13,10 @@ namespace Hangman.Core.Providers.Db
     /// Implementerar IStatisticsService genom att spara highscores i en SQLite-databas 
     /// med hjälp av Entity Framework Core.
     /// </summary>
-    public class SqliteStatisticsService : IStatisticsService
+    public class SqliteHangmanService : IStatisticsService
     {
         // Skapa en ny kontext-instans vid varje operation (bra för webb/konsolapplikationer utan DI)
-        private StatisticsDbContext CreateContext() => new StatisticsDbContext();
+        private HangmanDbContext CreateContext() => new HangmanDbContext();
 
         public async Task SaveHighscoreAsync(HighscoreEntry newScore)
         {
@@ -24,14 +24,14 @@ namespace Hangman.Core.Providers.Db
 
             using (var context = CreateContext())
             {
-                // Hitta befintlig post baserat på namn och svårighetsgrad
+                // FIX: Ändrat från .Equals(..., StringComparison.OrdinalIgnoreCase) till .ToLower() == .ToLower()
+                // Detta kan översättas till SQL, vilket löser felet.
                 var existingScore = await context.Highscores.FirstOrDefaultAsync(s =>
-                    s.PlayerName.Equals(newScore.PlayerName, StringComparison.OrdinalIgnoreCase) &&
+                    s.PlayerName.ToLower() == newScore.PlayerName.ToLower() &&
                     s.Difficulty == newScore.Difficulty);
 
                 if (existingScore != null)
                 {
-                    // UPPDATERING: Om den nya poängen är bättre, uppdatera den
                     if (newScore.ConsecutiveWins > existingScore.ConsecutiveWins)
                     {
                         existingScore.ConsecutiveWins = newScore.ConsecutiveWins;

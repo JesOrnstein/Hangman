@@ -12,7 +12,7 @@ class Program
         {
             // 1. SKAPA BEROENDENA (COMPOSITION ROOT)
             // Här väljer vi den konkreta implementeringen (SQLite)
-            IStatisticsService statsService = new SqliteStatisticsService();
+            IStatisticsService statsService = new SqliteHangmanService();
 
             // 2. Skapa vårt UI och INJICERA beroendet
             // Detta anropar nu den nya konstruktorn i ConsoleUi(IStatisticsService)

@@ -10,17 +10,17 @@ using System.IO;
 namespace Hangman.Core.Providers.Db
 {
     /// <summary>
-    /// EF Core databas-kontext för Highscores.
+    /// EF Core databas-kontext för Highscores och Custom Words.
     /// Hanterar anslutningen till SQLite-filen och definierar tabellerna.
     /// </summary>
-    public class StatisticsDbContext : DbContext
+    public class HangmanDbContext : DbContext // NAMNBYTE
     {
-        // DbSet representerar tabellen i databasen
         public DbSet<HighscoreEntry> Highscores { get; set; }
+        public DbSet<CustomWordEntry> CustomWords { get; set; } // NYTT: DbSet för anpassade ord
 
         private readonly string _databasePath;
 
-        public StatisticsDbContext()
+        public HangmanDbContext()
         {
             // Använder den mapp där det körbara programmet finns (t.ex. bin/Debug/net8.0/)
             string baseDir = AppContext.BaseDirectory;
@@ -34,15 +34,19 @@ namespace Hangman.Core.Providers.Db
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Konfigurera EF Core att använda SQLite och peka på filen
             optionsBuilder.UseSqlite($"Data Source={_databasePath}");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Gör kombinationen av namn och svårighetsgrad unik för att undvika dubbletter
+            // Gör kombinationen av namn och svårighetsgrad unik för Highscores
             modelBuilder.Entity<HighscoreEntry>()
                 .HasIndex(h => new { h.PlayerName, h.Difficulty })
+                .IsUnique();
+
+            // NYTT: Gör kombinationen av ord och svårighetsgrad unik för CustomWords
+            modelBuilder.Entity<CustomWordEntry>()
+                .HasIndex(w => new { w.Word, w.Difficulty })
                 .IsUnique();
         }
     }
