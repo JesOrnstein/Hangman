@@ -108,11 +108,15 @@ Nedan är planerade förbättringar som bygger vidare på den nuvarande, testade
 
 ### 🔹 Nästa steg (kortsiktigt)
 
-1) **Aktivera Lokal Ordlista:** Fullt implementera och aktivera den lokala ordlistan (`WordProvider`) i UI för att ge användare möjlighet att spela utan nätverksanslutning.
+✅ Klara funktioner
 
-2) **Spela mot människa (lokalt)**
-   - Ny UI-flöde där Spelare 1 matar in ordet (dolt eko), Spelare 2 gissar.
-   - Återanvänder `Game` rakt av, bara ordkällan ändras (t.ex. en `HumanWordProvider`).
+Aktivera Lokal Ordlista: Fullt implementera och aktivera den lokala ordlistan (WordProvider) i UI för att ge användare möjlighet att spela utan nätverksanslutning, inklusive 3 svårighetsgrader.
+
+Tvåspelarturnering: Implementera ett turneringsläge (2-spelare) där spelare har liv som återställs vid vinst, och spelet pågår tills en spelare förlorar alla sina liv.
+
+🔹 Nästa steg (kortsiktigt)
+
+2) Anpassad Ordlista (Lokal Fil-IO): Skapa en funktion i UI:t som låter användare lägga till egna ord, och spara/läsa in dessa ord persistent från en lokal fil (t.ex. JSON/TXT) för att utöka den lokala ordlistan.
 
 3) **Data & statistik**
    - `IStatisticsService` som loggar resultat:
