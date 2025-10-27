@@ -3,36 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Hangman.WPF.Views"
+        
+        xmlns:views="clr-namespace:Hangman.WPF.Views"
         xmlns:viewmodels="clr-namespace:Hangman.WPF.ViewModels"
+        
         mc:Ignorable="d"
-        Title="WPF Hangman" Height="300" Width="400"
-        Loaded="MainWindow_Loaded">
-    <Window.DataContext>
-        <viewmodels:GameViewModel/>
-    </Window.DataContext>
+        Title="WPF Hangman" Height="600" Width="800">
 
-    <StackPanel Margin="20">
-        <TextBlock Text="{Binding MaskedWord}"
-                   FontSize="32" 
-                   FontFamily="Courier New"
-                   HorizontalAlignment="Center"/>
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type viewmodels:MenuViewModel}">
+            <views:MenuView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:GameViewModel}">
+            <views:GameView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:HighscoreViewModel}">
+            <views:HighscoreView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:AddWordViewModel}">
+            <views:AddWordView />
+        </DataTemplate>
+    </Window.Resources>
 
-        <TextBlock Text="{Binding UsedLetters}"
-                   FontSize="16"
-                   Foreground="Gray"
-                   HorizontalAlignment="Center"
-                   Margin="0,10,0,20"/>
+    <ContentControl Content="{Binding CurrentViewModel}" />
 
-        <TextBox x:Name="GuessTextBox" 
-                 MaxLength="1" 
-                 Width="50" 
-                 FontSize="18"
-                 HorizontalAlignment="Center"/>
-
-        <Button Content="Gissa" 
-                Width="100" 
-                Margin="10"
-                Click="GuessButton_Click"/>
-    </StackPanel>
 </Window>

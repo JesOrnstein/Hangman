@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="Hangman.WPF.Views.HighscoreView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             mc:Ignorable="d" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <StackPanel Margin="20">
+        <TextBlock Text="Topplistor" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+        <TextBlock Text="{Binding StatusMessage}" FontSize="16" Foreground="Gray" HorizontalAlignment="Center"/>
+
+        <ListView ItemsSource="{Binding Highscores}" HorizontalAlignment="Center" Width="500">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Namn" Width="200" DisplayMemberBinding="{Binding PlayerName}"/>
+                    <GridViewColumn Header="Vinster i rad" Width="100" DisplayMemberBinding="{Binding ConsecutiveWins}"/>
+                    <GridViewColumn Header="Svårighetsgrad" Width="150" DisplayMemberBinding="{Binding Difficulty}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <Button Content="Tillbaka till Menyn" Command="{Binding BackToMenuCommand}" HorizontalAlignment="Center" Margin="0,20" Padding="10"/>
+    </StackPanel>
+</UserControl>

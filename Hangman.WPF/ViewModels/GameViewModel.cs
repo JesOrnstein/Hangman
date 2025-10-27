@@ -1,44 +1,62 @@
 ﻿using Hangman.Core;
 using Hangman.Core.Models;
-using Hangman.Core.Providers.Api; // <-- NY: För att hämta ord
+using Hangman.Core.Providers.Interface;
 using System.Linq;
-using System.Threading.Tasks;     // <-- NY: För async
+using System.Threading.Tasks;
+using System.Windows.Input;
+using System.Windows.Threading;
+using System;
+using Hangman.Core.Exceptions;
 using System.Windows;
+using Hangman.Core.Providers.Api;
+using Hangman.Core.Providers.Local;
 
 namespace Hangman.WPF.ViewModels
 {
     public class GameViewModel : BaseViewModel
     {
-        // 1. Modellen (M)
+        private readonly MainViewModel _mainViewModel;
+        private readonly IAsyncWordProvider _wordProvider;
+        private readonly IStatisticsService _statisticsService;
         private readonly Game _game;
+        private readonly DispatcherTimer _timer;
 
-        // 2. Egenskaper som UI:t (V) kan binda till
+        private string _playerName;
+        private int _consecutiveWins = 0;
+
+        // --- Bindningsbara Egenskaper ---
         private string _maskedWord = "Laddar ord...";
-        public string MaskedWord
-        {
-            get { return _maskedWord; }
-            set
-            {
-                _maskedWord = value;
-                OnPropertyChanged(); // Meddela UI:t!
-            }
-        }
+        public string MaskedWord { get => _maskedWord; set { _maskedWord = value; OnPropertyChanged(); } }
 
         private string _usedLetters = "";
-        public string UsedLetters
-        {
-            get { return _usedLetters; }
-            set
-            {
-                _usedLetters = value;
-                OnPropertyChanged(); // Meddela UI:t!
-            }
-        }
+        public string UsedLetters { get => _usedLetters; set { _usedLetters = value; OnPropertyChanged(); } }
 
-        // 3. Konstruktor (Modifierad)
-        public GameViewModel()
+        private string _gallowsImageSource = "/Images/stage_0.png";
+        public string GallowsImageSource { get => _gallowsImageSource; set { _gallowsImageSource = value; OnPropertyChanged(); } }
+
+        private int _secondsLeft = 60;
+        public int SecondsLeft { get => _secondsLeft; set { _secondsLeft = value; OnPropertyChanged(); } }
+
+        private bool _isGameInProgress = false;
+        public bool IsGameInProgress { get => _isGameInProgress; set { _isGameInProgress = value; OnPropertyChanged(); } }
+
+        private string _gameEndMessage = "";
+        public string GameEndMessage { get => _gameEndMessage; set { _gameEndMessage = value; OnPropertyChanged(); } }
+
+        public ICommand GuessCommand { get; }
+        public ICommand PlayAgainCommand { get; }
+        public ICommand BackToMenuCommand { get; }
+        public ICommand BackToMenuFinalCommand { get; }
+
+        // En lista med bokstäver för tangentbordet
+        public char[] KeyboardLetters { get; } = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".ToCharArray();
+
+        public GameViewModel(MainViewModel mainViewModel, IAsyncWordProvider wordProvider, IStatisticsService statisticsService, string playerName)
         {
-            // Skapa en instans av din modell
+            _mainViewModel = mainViewModel;
+            _wordProvider = wordProvider;
+            _statisticsService = statisticsService;
+            _playerName = playerName;
             _game = new Game(6);
 
             // Prenumerera på events från din modell!
@@ -46,63 +64,162 @@ namespace Hangman.WPF.ViewModels
             _game.WrongLetterGuessed += OnGameUpdated;
             _game.GameEnded += OnGameEnded;
 
-            // Vi startar inte spelet här längre, det gör LoadNewGameAsync
+            // Kommandon
+            GuessCommand = new RelayCommand(MakeGuess, CanGuess);
+            PlayAgainCommand = new RelayCommand(async _ => await StartNewRound());
+            BackToMenuCommand = new RelayCommand(_ => ExitGame(saveScore: false));
+            BackToMenuFinalCommand = new RelayCommand(_ => ExitGame(saveScore: true));
+
+            // Timer (baserad på ConsoleRenderer)
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _timer.Tick += Timer_Tick;
+
+            // Starta första rundan
+            Task.Run(StartNewRound);
         }
 
-        // 4. NY Metod för att ladda spel
-        public async Task LoadNewGameAsync()
+        private async Task StartNewRound()
         {
-            // Välj vilken ordhämtare du vill testa med:
-            var wordProvider = new ApiWordProvider(WordDifficulty.Medium);
-            // eller:
-            // var wordProvider = new Hangman.Core.WordProvider(WordDifficulty.Easy);
+            IsGameInProgress = true;
+            GameEndMessage = string.Empty;
+            MaskedWord = "Hämtar ord...";
+            UsedLetters = "";
+            GallowsImageSource = "/Images/stage_0.png";
 
             try
             {
-                // Hämta ordet asynkront
-                string word = await wordProvider.GetWordAsync();
+                string word = await _wordProvider.GetWordAsync();
                 _game.StartNew(word);
             }
-            catch (System.Exception)
+            catch (NoCustomWordsFoundException ex)
             {
-                // Hantera fel, t.ex. om API:et är nere
-                // (Du kan logga ex.Message här)
-                _game.StartNew("APIERROR");
+                //
+                MessageBox.Show($"Kunde inte starta spelet: Inga anpassade ord hittades för {ex.Difficulty} ({ex.Language}).", "Ordlistefel");
+                _mainViewModel.NavigateToMenu();
+                return;
             }
-            finally
+            catch (Exception ex)
             {
-                // Uppdatera alltid UI:t när laddningen är klar
-                UpdateUiProperties();
+                MessageBox.Show($"Kunde inte hämta ord: {ex.Message}", "API-fel");
+                _game.StartNew("APIERROR"); // Fallback
             }
+
+            UpdateUiProperties();
+            SecondsLeft = 60;
+            _timer.Start();
         }
 
-
-        // 5. Metod som UI:t kan anropa
-        public void MakeGuess(char letter)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
-            _game.Guess(letter);
+            SecondsLeft--;
+            if (SecondsLeft <= 0)
+            {
+                _timer.Stop();
+                GameEndMessage = "Tiden är ute!"; //
+                _game.ForceLose();
+            }
         }
 
-        // 6. Event-handlers (Modellen pratar med oss)
+        private bool CanGuess(object? parameter)
+        {
+            if (parameter is char letter)
+            {
+                return IsGameInProgress && !_game.UsedLetters.Contains(letter);
+            }
+            return false;
+        }
+
+        private void MakeGuess(object? parameter)
+        {
+            if (parameter is char letter)
+            {
+                _game.Guess(letter);
+            }
+        }
+
         private void OnGameUpdated(object? sender, char e)
         {
             UpdateUiProperties();
         }
 
-        private void OnGameEnded(object? sender, GameStatus status)
+        private async void OnGameEnded(object? sender, GameStatus status)
         {
+            _timer.Stop();
+            IsGameInProgress = false;
+
+            if (status == GameStatus.Won)
+            {
+                _consecutiveWins++;
+                GameEndMessage = $"GRATTIS, DU VANN! Ordet var: {_game.Secret}\nVinster i rad: {_consecutiveWins}"; //
+            }
+            else // Lost
+            {
+                GameEndMessage = $"DU FÖRLORADE... Ordet var: {_game.Secret}"; //
+
+                // Om spelaren förlorar, spara highscore och återställ
+                if (_consecutiveWins > 0)
+                {
+                    await SaveHighscoreAsync();
+                    _consecutiveWins = 0;
+                }
+            }
             UpdateUiProperties();
-            // Här kan du visa en MessageBox
-            MessageBox.Show(
-                status == GameStatus.Won ? "Grattis, du vann!" : $"Du förlorade! Ordet var: {_game.Secret}",
-                "Spelet är slut");
         }
 
-        // 7. Hjälpmetod för att uppdatera alla UI-fält
         private void UpdateUiProperties()
         {
-            MaskedWord = _game.GetMaskedWord();
+            // Lägger till mellanrum i strängen, precis som i ConsoleRenderer
+            MaskedWord = string.Join(" ", _game.GetMaskedWord().ToCharArray());
+
             UsedLetters = $"Gissade: {string.Join(", ", _game.UsedLetters.OrderBy(c => c))}";
+            GallowsImageSource = $"/Images/stage_{_game.Mistakes}.png";
+        }
+
+        private async void ExitGame(bool saveScore)
+        {
+            _timer.Stop();
+            if (saveScore && _consecutiveWins > 0)
+            {
+                await SaveHighscoreAsync();
+            }
+            _mainViewModel.NavigateToMenu();
+        }
+
+        // --- KORRIGERAD METOD ---
+        private async Task SaveHighscoreAsync()
+        {
+            // Försöker ta reda på svårighetsgraden från providern.
+            // Detta är lite osäkert (använder reflektion), men fungerar för de kända typerna.
+            WordDifficulty difficulty;
+            if (_wordProvider is ApiWordProvider api)
+            {
+                difficulty = (WordDifficulty)api.GetType().GetField("_difficulty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(api)!;
+            }
+            else if (_wordProvider is WordProvider local)
+            {
+                difficulty = (WordDifficulty)local.GetType().GetField("_difficulty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(local)!;
+            }
+            else if (_wordProvider is CustomWordProvider custom)
+            {
+                difficulty = (WordDifficulty)custom.GetType().GetField("_difficulty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(custom)!;
+            }
+            else
+            {
+                return; // Kan inte avgöra svårighetsgrad för okänd provider
+            }
+
+            // KORRIGERING: Använd object initializer för att uppfylla 'required'
+            var newScore = new HighscoreEntry
+            {
+                PlayerName = _playerName,
+                ConsecutiveWins = _consecutiveWins,
+                Difficulty = difficulty
+            };
+
+            await _statisticsService.SaveHighscoreAsync(newScore); //
         }
     }
 }
