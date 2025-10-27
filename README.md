@@ -182,10 +182,10 @@ dotnet test
 ## 🖼️ Skärmbilder
 
 - **Hangman.WPF – GameView**  
-  ![WPF GameView](docs/images/wpf-gameview.png)
+  ![WPF GameView](Hangman.WPF/Images/WPFScreenShow.png)
 
 - **Hangman.Console – Spelrunda**  
-  ![Console Round](docs/images/console-round.png)
+  ![Console Round](Hangman.WPF/Images/ConsoleScreenShot.png)
 
 ---
 
