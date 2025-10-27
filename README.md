@@ -180,7 +180,7 @@ dotnet test
 
 ## 🖼️ Skärmbilder
 
-- **Hangman.WPF – GameView**  
+- **Hangman.WPF – GameViewWPF**  
   ![WPF GameView](Hangman.WPF/Images/WPFScreenShow.png)
 
 - **Hangman.Console – ConsoleMenu**  
