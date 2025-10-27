@@ -5,7 +5,7 @@ using Hangman.Core.Providers.Interface;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
+using System.Windows; // <-- NY USING FÖR DISPATCHER
 using System.Windows.Input;
 using System.Windows.Threading;
 using Hangman.Core.Localizations;
@@ -120,10 +120,14 @@ namespace Hangman.WPF.ViewModels
             }
             catch (NoCustomWordsFoundException ex)
             {
-                MessageBox.Show(
-                    _strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language),
-                    _strings.SelectWordSourceTitle
-                );
+                // FIX: Anropas via UI-tråden
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(
+                        _strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language),
+                        _strings.SelectWordSourceTitle
+                    );
+                });
                 _mainViewModel.NavigateToMenu();
                 return;
             }
@@ -134,10 +138,14 @@ namespace Hangman.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    _strings.ErrorCouldNotFetchTournamentWord(ex.Message),
-                    _strings.ErrorApiGeneric // ÄNDRAD
-                );
+                // FIX: Anropas via UI-tråden
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(
+                        _strings.ErrorCouldNotFetchTournamentWord(ex.Message),
+                        _strings.ErrorApiGeneric // ÄNDRAD
+                    );
+                });
                 _game.StartNew("APIERROR");
             }
 
