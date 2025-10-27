@@ -1,6 +1,8 @@
 ﻿using Hangman.IO;
 using System;
 using System.Threading.Tasks;
+using Hangman.Core.Providers.Db;
+using Hangman.Core.Providers.Interface;
 
 class Program
 {
@@ -8,11 +10,15 @@ class Program
     {
         try
         {
-            // 1. Skapa vårt UI. Den sköter nu allt,
-            //    inklusive menyval och skapande av Game/Provider.
-            ConsoleUi ui = new ConsoleUi();
+            // 1. SKAPA BEROENDENA (COMPOSITION ROOT)
+            // Här väljer vi den konkreta implementeringen (SQLite)
+            IStatisticsService statsService = new SqliteStatisticsService();
 
-            // 2. Kör UI:t (som nu innehåller huvudmenyn)
+            // 2. Skapa vårt UI och INJICERA beroendet
+            // Detta anropar nu den nya konstruktorn i ConsoleUi(IStatisticsService)
+            ConsoleUi ui = new ConsoleUi(statsService);
+
+            // 3. Kör UI:t (som nu innehåller huvudmenyn)
             await ui.RunAsync();
         }
         catch (Exception ex)
