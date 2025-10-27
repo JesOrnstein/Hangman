@@ -48,6 +48,20 @@ namespace Hangman.WPF.ViewModels
             CurrentViewModel = new AddWordViewModel(this);
         }
 
+        // --- NY METOD FÖR STEG 2 ---
+        public void NavigateToHelp()
+        {
+            CurrentViewModel = new HelpViewModel(this);
+        }
+
+        // --- NY METOD FÖR STEG 1 ---
+        public void NavigateToTournament(GameSettings settings)
+        {
+            IAsyncWordProvider provider = CreateProvider(settings);
+            CurrentViewModel = new TournamentViewModel(this, provider, settings);
+        }
+        // ---
+
         public void NavigateToGame(GameSettings settings)
         {
             IAsyncWordProvider provider = CreateProvider(settings);
