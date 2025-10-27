@@ -1,8 +1,31 @@
-﻿# 🎮 Hangman
+# 🎮 Hangman
 
-Ett avancerat C#-projekt byggt som ett komplett Hänga Gubbe-spel, nu med stöd för både konsol och ett grafiskt WPF (MVVM)-gränssnitt.
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
+[![WPF](https://img.shields.io/badge/WPF-MVVM-blue)](#-arkitektur)
+[![xUnit](https://img.shields.io/badge/Tests-xUnit-5A2A83)](#-testning)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-Projektet är utvecklat med fokus på ren arkitektur (Separation of Concerns), MVVM, testdriven utveckling (TDD) och flerspråksstöd.
+Ett avancerat C#-projekt byggt som ett komplett **Hänga Gubbe**-spel, med stöd för både **konsol** och ett grafiskt **WPF (MVVM)**-gränssnitt.  
+Fokus: **Clean Architecture (Separation of Concerns)**, **MVVM**, **TDD**, **i18n**.
+
+---
+
+## Innehåll
+- [Projektstruktur](#-projektstruktur)
+- [Mappstruktur](#-mappstruktur)
+- [Kom igång (Build & Run)](#-kom-igång-build--run)
+  - [Förutsättningar](#förutsättningar)
+  - [Köra via Visual Studio (rekommenderat)](#köra-via-visual-studio-rekommenderat)
+  - [Köra via kommandoraden (dotnet-cli)](#köra-via-kommandoraden-dotnet-cli)
+- [Databashantering](#-databashantering)
+- [Funktioner](#-funktioner)
+- [Arkitektur](#-arkitektur)
+- [Avancerade C#-koncept som används](#-avancerade-c-koncept-som-används)
+- [Testning](#-testning)
+- [Skärmbilder](#-skärmbilder)
+- [Tillgångar (Sprites & Bilder)](#-tillgångar-sprites--bilder)
+- [Katalog över viktiga filer](#-katalog-över-viktiga-filer)
+- [Licens](#-licens)
 
 ---
 
@@ -10,188 +33,191 @@ Projektet är utvecklat med fokus på ren arkitektur (Separation of Concerns), M
 
 Lösningen är uppdelad i fyra projekt för tydlig ansvarsfördelning:
 
-| Projekt | Typ | Syfte |
-|---|---|---|
-| `Hangman.Core` | Class Library | Kärnlogik, spelregler, databasmodeller, providers (ord/statistik) och lokaliseringsstöd. |
-| `Hangman.Console` | Console App | Det körbara konsol-baserade spelet. |
-| `Hangman.WPF` | WPF App | **NYTT:** Grafiskt gränssnitt (GUI) byggt med MVVM-arkitekturen. |
-| `HangmanTest` | xUnit Test Project | Enhetstester för `Hangman.Core`. |
+| Projekt           | Typ            | Syfte                                                                 |
+|-------------------|----------------|-----------------------------------------------------------------------|
+| `Hangman.Core`    | Class Library  | Kärnlogik, spelregler, datamodeller, providers (ord/statistik), i18n.|
+| `Hangman.Console` | Console App    | Det körbara konsol-baserade spelet.                                  |
+| `Hangman.WPF`     | WPF App        | **GUI** byggt med **MVVM**.                                          |
+| `HangmanTest`     | xUnit Tests    | Enhetstester för `Hangman.Core`.                                     |
 
 ---
 
-### 🧱 Mappstruktur
-```
+## 🧱 Mappstruktur
+
+```text
 Hangman/
 ├─ Hangman.Core/
-│ ├─ Game.cs                # Kärnlogik för en spelrunda
-│ ├─ TwoPlayerGame.cs       # Logik för turneringsläge
-│ ├─ Models/              # Datamodeller (HighscoreEntry, CustomWordEntry, etc.)
-│ ├─ Providers/
-│ │ ├─ Db/                # EF Core (HangmanDbContext, SqliteHangmanService)
-│ │ ├─ Api/               # ApiWordProvider
-│ │ └─ Local/             # Lokal/Anpassad ordprovider
-│ └─ Localizations/       # Språkstöd (IUiStrings, SwedishUiStrings, etc.)
+│  ├─ Game.cs                  # Kärnlogik för en spelrunda
+│  ├─ TwoPlayerGame.cs         # Logik för turneringsläge (2-spelare)
+│  ├─ Models/                  # Datamodeller (HighscoreEntry, CustomWordEntry, ...)
+│  ├─ Providers/
+│  │  ├─ Db/                   # EF Core (HangmanDbContext, SqliteHangmanService)
+│  │  ├─ Api/                  # ApiWordProvider (externa ord via HttpClient)
+│  │  └─ Local/                # Lokala/egna ordkällor
+│  └─ Localizations/           # IUiStrings, SwedishUiStrings, EnglishUiStrings
 │
 ├─ Hangman.Console/
-│ ├─ Program.cs
-│ ├─ GameController.cs      # Huvud-loop för konsolappen
-│ ├─ ConsoleInput.cs      # Hanterar inmatning
-│ └─ ConsoleRenderer.cs   # Hanterar all rendering
+│  ├─ Program.cs               # Entrypoint
+│  ├─ GameController.cs        # Orkestrering / huvudloop
+│  ├─ ConsoleInput.cs          # Inmatning
+│  └─ ConsoleRenderer.cs       # Rendering
 │
 ├─ Hangman.WPF/
-│ ├─ App.xaml.cs            # Startpunkt, sätter upp DI/Localization
-│ ├─ Views/                 # Alla XAML-vyer (MainWindow, GameView, MenuView...)
-│ └─ ViewModels/            # All UI-logik (MainViewModel, GameViewModel, etc.)
+│  ├─ App.xaml(.cs)            # Start, manuell DI & Localization
+│  ├─ Views/                   # XAML-vyer (MainWindow, GameView, MenuView, ...)
+│  └─ ViewModels/              # UI-logik (MainViewModel, GameViewModel, ...)
 │
 └─ HangmanTest/
-  └─ GameTests.cs
+   └─ GameTests.cs             # xUnit-tester för kärnlogiken
 ```
+
 ---
 
 ## 🚀 Kom igång (Build & Run)
 
-Här är instruktionerna för att bygga och köra projektet.
-
 ### Förutsättningar
+- **.NET 8 SDK** (målram: `net8.0`)
+- **Windows** (krävs för WPF)
+- **Visual Studio 2022** (rekommenderas) med workload **“.NET desktop development”**
 
-* **.NET 8 SDK:** Projektet är byggt med `net8.0`.
-* **Visual Studio 2022 (Rekommenderat):** Inkludera arbetsbelastningen ".NET desktop development" för WPF.
-* **Windows-dator:** Krävs för att köra WPF-applikationen.
+### Köra via Visual Studio (rekommenderat)
+1. Klona repot och öppna **`Hangman.sln`** i Visual Studio.
+2. Välj startup-projekt:
+   - **Konsol:** högerklicka `Hangman.Console` → **Set as Startup Project**
+   - **WPF:** högerklicka `Hangman.WPF` → **Set as Startup Project**
+3. Tryck **F5** (Start).
+
+### Köra via kommandoraden (dotnet-cli)
+
+**Konsol:**
+```bash
+cd Hangman/Hangman.Console
+dotnet run
+```
+
+**WPF (Windows):**
+```bash
+cd Hangman/Hangman.WPF
+dotnet run
+```
 
 ---
 
-### Köra via Visual Studio 2022 (Rekommenderat)
+## 🗄️ Databashantering
 
-1.  Klona repot.
-2.  Öppna `Hangman.sln`-filen i Visual Studio.
-3.  Välj vilket projekt du vill köra:
-    * **För konsol-versionen:** Högerklicka på `Hangman.Console`-projektet i Solution Explorer och välj "Set as Startup Project".
-    * **För WPF-versionen:** Högerklicka på `Hangman.WPF`-projektet i Solution Explorer och välj "Set as Startup Project".
-4.  Tryck på **Start** (F5) för att bygga och köra.
+- Databasen **`Hangman.db`** skapas automatiskt vid första körning.  
+- `HangmanDbContext` använder `Database.EnsureCreated()` och lägger filen i t.ex. `bin/Debug/net8.0/`.  
+- Ingen manuell migrering krävs för att komma igång.
 
-### Köra via kommandoraden (dotnet CLI)
+---
 
-Du kan köra båda applikationerna direkt från din terminal.
+## ⚙️ Funktioner
 
-**Köra Konsol-versionen:**
+- **Dubbla gränssnitt** – spela i **konsol** eller **WPF (MVVM)**.
+- **Flerspråksstöd (i18n)** – växla **svenska/engelska** via `IUiStrings` (Strategy Pattern).
+- **SQLite + EF Core 8** – highscores & egna ord sparas i `Hangman.db`.
+- **Highscore-system** – lagrar “consecutive wins” per spelare/svårighetsgrad.
+- **Anpassade ordlistor** – lägg till egna ord (sv/eng) via UI – lagras permanent.
+- **Turneringsläge** – 2 spelare, 3 liv var.
+- **Speltimer** – 60 sekunder per runda (single & tournament).
+- **Asynkron ordhantering** – `IAsyncWordProvider` (API, DB, lokal).
+- **API-integration** – hämtar engelska ord från externt API.
+- **Ren konsolarkitektur** – `ConsoleInput`/`ConsoleRenderer` för SoC.
+
+---
+
+## 🧱 Arkitektur
+
+```mermaid
+flowchart LR
+    UI_WPF[WPF Views (XAML)] --> VM[ViewModels (MVVM)]
+    UI_Console[Console Renderer/Input] --> C[Controllers]
+    VM --> Core[Hangman.Core]
+    C --> Core
+    Core --> ProvidersDB[Providers: Db (EF Core/SQLite)]
+    Core --> ProvidersApi[Providers: Api (HttpClient)]
+    Core --> ProvidersLocal[Providers: Local]
+    Core --> Localization[IUiStrings (i18n)]
+```
+
+- **MVVM (WPF)** – View (XAML) ↔ ViewModel (`INotifyPropertyChanged`, `ICommand`) ↔ Model (Core).
+- **Clean Architecture** – `Hangman.Core` känner inte till UI-lagren.
+- **Strategy Pattern** – för **ordkällor** (`IAsyncWordProvider`) och **lokalisering** (`IUiStrings`).
+- **Manuell DI** – tjänster instansieras i `App.xaml.cs` (WPF) & `Program.cs` (Console).
+
+---
+
+## 🧩 Avancerade C#-koncept som används
+
+| Område | Exempel i koden | Förklaring |
+|---|---|---|
+| Asynkron programmering | `async Task RunAsync()`, `await _wordProvider.GetWordAsync()` | Ordinhämtning, timers och UI-responsivitet (WPF) hanteras asynkront. I konsol används `Task.Run` + `CancellationTokenSource` för timer parallellt med input. |
+| Data Binding (MVVM) | `INotifyPropertyChanged`, `ICommand` (t.ex. `RelayCommand`) | ViewModels meddelar UI om förändringar; knappar kopplas till kommandon – logik separeras från XAML. |
+| Events & Delegates | `Game.GameEnded += OnGameEnded` | `Game.cs` signalerar win/lose och statusförändringar till UI-lagret. |
+| Strategy Pattern | `IUiStrings`, `IAsyncWordProvider` | Utbytbara språk & ordkällor (API/DB/lokal) utan att ändra konsumenterna. |
+| LINQ | `context.Highscores.OrderBy(...).Take(n)` | Effektiv hämtning/filtrering, särskilt i `SqliteHangmanService`. |
+| Avancerade Collections | `HashSet<char>`, `ObservableCollection<T>` | O(1) gissningskontroll och automatisk UI-uppdatering av listor i WPF. |
+| Anpassad felhantering | `NoCustomWordsFoundException` | Domänspecifika undantag översätts till användarvänliga, lokaliserade UI-meddelanden. |
+
+---
+
+## 🧪 Testning
+
+- **Ramverk:** xUnit  
+- **Plats:** `HangmanTest/GameTests.cs`
+
+**Täckta scenarier:**
+- Initiering av spel
+- Rätt/fel gissningar & dubbelgissningar
+- Vinst-/förlustvillkor
+- Eventflöden
+- Edge cases (tomma ord, specialtecken, case-insensitivity)
+
+Kör tester:
 ```bash
-# Navigera till konsol-projektets mapp
-cd Hangman/Hangman.Console
+dotnet test
+```
 
-# Kör applikationen
-dotnet run
+---
 
-Köra WPF-versionen:
+## 🖼️ Skärmbilder
 
-# Navigera till WPF-projektets mapp
-cd Hangman.WPF
+> Byt ut platshållarna nedan mot riktiga bilder från din miljö.
 
-# Kör applikationen
-dotnet run
+- `Hangman.WPF` – **GameView**  
+  `Hangman.WPF/Images/WPFScreenShow.png`
 
-### Databashantering
+- `Hangman.Console` – **Spelrunda**  
+  `Hangman.WPF/Images/ConsoleScreenShot.png`
 
-Databasen (Hangman.db) skapas och konfigureras automatiskt vid första körningen. 
-HangmanDbContext använder Database.EnsureCreated() för att skapa filen i bin/Debug/net8.0-mappen. Ingen manuell migrering eller setup krävs.
+---
 
-⚙️ Funktioner
-Dubbla Gränssnitt: Spela antingen i ett klassiskt konsolfönster eller i ett modernt WPF-gränssnitt.
+## 📚 Katalog över viktiga filer
 
-WPF (MVVM): En fullt fungerande GUI-applikation byggd med Model-View-ViewModel-arkitektur, vilket separerar UI (View) från logik (ViewModel).
+<details>
+<summary><strong>Hangman.Core</strong></summary>
 
-Flerspråksstöd (i18n): Hela applikationen (både konsol och WPF) kan växla mellan svenska och engelska med hjälp av ett Strategy Pattern (IUiStrings).
+- `Game.cs` – Spelregler och rundlogik  
+- `TwoPlayerGame.cs` – Turneringsläge (2 spelare, livsystem)  
+- `Providers/Db/` – `HangmanDbContext`, `SqliteHangmanService`  
+- `Providers/Api/ApiWordProvider.cs` – Ord via `HttpClient`  
+- `Localizations/` – `IUiStrings`, `SwedishUiStrings`, `EnglishUiStrings`
+</details>
 
-Databas (SQLite): Använder Entity Framework Core 8 för att spara highscores och anpassade ord i en lokal SQLite-databas (Hangman.db).
+<details>
+<summary><strong>Hangman.WPF</strong></summary>
 
-Highscore-system: Sparar "consecutive wins" per spelare och svårighetsgrad i databasen.
+- `App.xaml(.cs)` – Start, DI, språksättning  
+- `Views/` – `MainWindow.xaml`, `GameView.xaml`, `MenuView.xaml`, ...  
+- `ViewModels/` – `MainViewModel`, `GameViewModel`, `HighscoreViewModel`, ...
+</details>
 
-Anpassade Ordlistor: Användare kan lägga till egna ord (på svenska eller engelska) via gränssnittet, vilka sparas permanent i databasen.
+<details>
+<summary><strong>Hangman.Console</strong></summary>
 
-Turneringsläge: Ett 2-spelarläge där spelare tävlar mot varandra med 3 "liv" var.
+- `Program.cs` – Entrypoint  
+- `GameController.cs` – Orkestrering  
+- `ConsoleInput.cs` / `ConsoleRenderer.cs` – SoC för IO
+</details>
 
-Speltimer: Varje runda (både enspelare och turnering) har en 60-sekunders timer.
-
-Asynkron Ordhantering: Hämtar ord asynkront från olika källor via IAsyncWordProvider (API, lokal lista, databas).
-
-API-integration: Hämtar engelska ord från ett externt API.
-
-Ren Konsol-arkitektur: Konsolappen är uppdelad i ConsoleInput och ConsoleRenderer för bättre Separation of Concerns.
-
-🧪 Testning
-Projektet använder xUnit. Alla tester finns i HangmanTest/GameTests.cs och täcker:
-
-Initiering av spel
-
-Rätt och fel gissningar
-
-Dubbelgissningar
-
-Vinst- och förlustvillkor
-
-Eventhantering
-
-Edge cases (tomma ord, specialtecken, case-insensitivity)
-
-🧠 Använd teknik
-.NET 8 & C# 12: Hela lösningen (Core, Console, WPF och Tester) är byggd på den senaste .NET 8-plattformen och använder moderna C# 12-funktioner som required-medlemmar i datamodeller.
-
-Dubbla UI-Ramverk:
-
-WPF (Windows Presentation Foundation): Ett modernt, grafiskt gränssnitt för Windows. Hela Hangman.WPF-projektet är dedikerat till detta.
-
-Konsolapplikation: Ett klassiskt textbaserat gränssnitt som körs i terminalen.
-
-Arkitektur & Designmönster:
-
-MVVM (Model-View-ViewModel): Arkitekturen som driver hela WPF-applikationen.
-
-View: XAML-filerna (GameView.xaml, MenuView.xaml, etc.) definierar hur UI:t ser ut.
-
-ViewModel: Klasser som GameViewModel.cs och MenuViewModel.cs innehåller all UI-logik och binder data till vyerna.
-
-Model: Kärnklasserna från Hangman.Core (som Game.cs och HighscoreEntry.cs) agerar modeller.
-
-Clean Architecture (Separation of Concerns): Strikt uppdelning av ansvar:
-
-Hangman.Core: Innehåller all affärslogik, databasåtkomst och spelregler. Vet inget om UI.
-
-Hangman.Console: Hanterar enbart in- och utmatning för konsolen.
-
-Hangman.WPF: Hanterar enbart den grafiska presentationen och användarinteraktion.
-
-Strategy Pattern: Används på två viktiga platser för att göra systemet utbytbart:
-
-Ord-källor: IAsyncWordProvider låter spellogiken hämta ord utan att veta varifrån de kommer (API, lokal fil eller databas).
-
-Lokalisering (i18n): IUiStrings låter hela applikationen byta språk (mellan SwedishUiStrings.cs och EnglishUiStrings.cs) genom att byta ut en strategi-implementation.
-
-Dependency Injection (Manuell): I stället för ett tungt ramverk "injiceras" tjänster (beroenden) manuellt vid start. Både App.xaml.cs (för WPF) och Program.cs (för Konsol) skapar instanser av IStatisticsService och LocalizationProvider och skickar dem till de ViewModels och Controllers som behöver dem.
-
-Databas:
-
-Entity Framework Core 8: Används som ORM (Object-Relational Mapper) för all databaskommunikation.
-
-SQLite: En lättvikts-databas som lagrar all data (highscores och anpassade ord) i en enda fil (Hangman.db) direkt i programkatalogen.
-
-Testning:
-
-xUnit: Testramverket som används för enhetstester.
-
-TDD (Test Driven Development): Game.cs är utvecklad med TDD, vilket bevisas av den omfattande testfilen GameTests.cs som täcker alla regler och edge-cases.
-
-API-Kommunikation:
-
-HttpClient och System.Net.Http.Json används i ApiWordProvider.cs för att asynkront hämta slumpmässiga ord från ett externt webb-API.
-
-🧩 Avancerade C#-koncept som används
-Här är en tabell som bryter ner några av de mer avancerade koncepten och var de används i projektet:
-
-Område,Exempel i Koden,Förklaring
-Asynkron Programmering,"async Task RunAsync(), await _wordProvider.GetWordAsync()","Hela applikationsflödet, ordhämtning och timers hanteras asynkront. I WPF (GameViewModel) säkerställer detta att UI:t aldrig ""fryser"". I Konsol (GameController) används Task.Run och CancellationTokenSource för att hantera speltimern parallellt med användarinmatning."
-Data Binding (MVVM),"INotifyPropertyChanged, RelayCommand","I WPF ärver alla ViewModels från BaseViewModel för att meddela UI:t om ändringar. ICommand (RelayCommand) hanterar knapptryckningar, vilket helt separerar logik från XAML-vyn."
-Events & Delegates,Game.GameEnded += OnGameEnded,"Kärnlogiken (Game.cs) använder traditionella C#-events för att meddela sin ""ägare"" (en ViewModel eller Controller) om att speltillståndet har ändrats (t.ex. att spelet är vunnet)."
-Strategy Pattern,"IUiStrings, IAsyncWordProvider","Används för att ""injicera"" beteenden. MainViewModel kan starta ett spel med vilken som helst IAsyncWordProvider (API, DB, Lokal) utan att veta implementationen. LocalizationProvider använder samma mönster för att byta språk."
-LINQ,context.Highscores.OrderBy(...).Take(N),"Används flitigt för att fråga och transformera datamängder, särskilt i SqliteHangmanService för att hämta och filtrera topplistor från databasen."
-Avancerade Collections,"HashSet<char>, ObservableCollection<T>",HashSet används i Game.cs för O(1)-prestanda vid gissningskontroll. ObservableCollection används i HighscoreViewModel för att automatiskt uppdatera WPF-gränssnitten när listan ändras.
-Anpassad Felhantering,NoCustomWordsFoundException,"Projektet definierar egna undantag. När en ordlista är tom kastas ett specifikt undantag som fångas i UI-lagret (GameViewModel/GameController) och översätts till ett användarvänligt, lokaliserat meddelande."
-
+---

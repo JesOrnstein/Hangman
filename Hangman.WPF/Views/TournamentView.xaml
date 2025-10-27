@@ -69,11 +69,11 @@
             <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="10">
                 <TextBlock Text="{Binding Player1.Name}" FontSize="18" FontWeight="Bold" Foreground="DodgerBlue"/>
                 <TextBlock FontSize="14">
-                    <Run Text="{Binding Strings.TournamentHeaderLives}"/>
+                    <Run Text="{Binding Strings.TournamentHeaderLives, Mode=OneWay}"/>
                     <Run Text="{Binding Player1.Lives}" FontWeight="Bold"/>
                 </TextBlock>
                 <TextBlock FontSize="14">
-                    <Run Text="{Binding Strings.TournamentHeaderWins}"/>
+                    <Run Text="{Binding Strings.TournamentHeaderWins, Mode=OneWay}"/>
                     <Run Text="{Binding Player1.Wins}" FontWeight="Bold"/>
                 </TextBlock>
             </StackPanel>
@@ -81,11 +81,11 @@
             <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Margin="10" TextBlock.TextAlignment="Right">
                 <TextBlock Text="{Binding Player2.Name}" FontSize="18" FontWeight="Bold" Foreground="OrangeRed"/>
                 <TextBlock FontSize="14">
-                    <Run Text="{Binding Strings.TournamentHeaderLives}"/>
+                    <Run Text="{Binding Strings.TournamentHeaderLives, Mode=OneWay}"/>
                     <Run Text="{Binding Player2.Lives}" FontWeight="Bold"/>
                 </TextBlock>
                 <TextBlock FontSize="14">
-                    <Run Text="{Binding Strings.TournamentHeaderWins}"/>
+                    <Run Text="{Binding Strings.TournamentHeaderWins, Mode=OneWay}"/>
                     <Run Text="{Binding Player2.Wins}" FontWeight="Bold"/>
                 </TextBlock>
             </StackPanel>
@@ -170,6 +170,5 @@
                     Margin="0,30" Padding="10"
                     FontSize="16"/>
         </StackPanel>
-
     </Grid>
 </UserControl>
