@@ -23,14 +23,18 @@ namespace Hangman.WPF.ViewModels
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public bool CanExecute(object? parameter)
-        {
-            return _canExecute == null || _canExecute(parameter);
-        }
+        public bool CanExecute(object? parameter) =>
+            _canExecute == null || _canExecute(parameter);
 
-        public void Execute(object? parameter)
-        {
+        public void Execute(object? parameter) =>
             _execute(parameter);
+
+        /// <summary>
+        /// Anropa när förutsättningarna för CanExecute kan ha ändrats.
+        /// </summary>
+        public void RaiseCanExecuteChanged()
+        {
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 }
