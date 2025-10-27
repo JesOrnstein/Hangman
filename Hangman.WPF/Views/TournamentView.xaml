@@ -1,0 +1,175 @@
+﻿<UserControl x:Class="Hangman.WPF.Views.TournamentView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Hangman.WPF.Views"
+             xmlns:viewmodels="clr-namespace:Hangman.WPF.ViewModels"
+             d:DataContext="{d:DesignInstance Type=viewmodels:TournamentViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <Style TargetType="Button" x:Key="KeyboardButton">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Command"
+                    Value="{Binding DataContext.GuessCommand,
+                                    RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+            <Setter Property="CommandParameter" Value="{Binding}"/>
+        </Style>
+
+        <Style TargetType="StackPanel" x:Key="RoundEndPanelStyle">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsRoundInProgress}" Value="False" />
+                        <Condition Binding="{Binding IsTournamentInProgress}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="StackPanel" x:Key="TournamentEndPanelStyle">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsTournamentInProgress}" Value="False">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+
+        <Grid Visibility="{Binding IsRoundInProgress, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="10">
+                <TextBlock Text="{Binding Player1.Name}" FontSize="18" FontWeight="Bold" Foreground="DodgerBlue"/>
+                <TextBlock FontSize="14">
+                    <Run Text="{Binding Strings.TournamentHeaderLives}"/>
+                    <Run Text="{Binding Player1.Lives}" FontWeight="Bold"/>
+                </TextBlock>
+                <TextBlock FontSize="14">
+                    <Run Text="{Binding Strings.TournamentHeaderWins}"/>
+                    <Run Text="{Binding Player1.Wins}" FontWeight="Bold"/>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Margin="10" TextBlock.TextAlignment="Right">
+                <TextBlock Text="{Binding Player2.Name}" FontSize="18" FontWeight="Bold" Foreground="OrangeRed"/>
+                <TextBlock FontSize="14">
+                    <Run Text="{Binding Strings.TournamentHeaderLives}"/>
+                    <Run Text="{Binding Player2.Lives}" FontWeight="Bold"/>
+                </TextBlock>
+                <TextBlock FontSize="14">
+                    <Run Text="{Binding Strings.TournamentHeaderWins}"/>
+                    <Run Text="{Binding Player2.Wins}" FontWeight="Bold"/>
+                </TextBlock>
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
+                       Text="{Binding TimerText}"
+                       FontSize="20" FontWeight="Bold"
+                       Foreground="Crimson"
+                       HorizontalAlignment="Center"/>
+
+            <Image Grid.Row="2" Grid.ColumnSpan="2"
+                   Source="{Binding GallowsImageSource}"
+                   Height="200" Margin="0,10" Stretch="Uniform"/>
+
+            <TextBlock Grid.Row="3" Grid.ColumnSpan="2"
+                       Text="{Binding CreakAnimationText}"
+                       HorizontalAlignment="Center" FontSize="14"
+                       Foreground="DarkGray" FontStyle="Italic" FontFamily="Courier New"/>
+
+            <StackPanel Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center">
+                <TextBlock HorizontalAlignment="Center" FontSize="16" Opacity="0.8">
+                    <Run Text="{Binding ActivePlayerText}"/>
+                    <Run Text="{Binding CurrentGuesserName}" FontWeight="Bold"/>
+                </TextBlock>
+                <TextBlock Text="{Binding MaskedWord}"
+                           FontSize="48" FontFamily="Courier New"
+                           FontWeight="Bold" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <TextBlock Grid.Row="5" Grid.ColumnSpan="2"
+                       Text="{Binding UsedLetters}"
+                       FontSize="16" Foreground="Gray"
+                       HorizontalAlignment="Center" Margin="0,10,0,20"/>
+
+            <ItemsControl Grid.Row="6" Grid.ColumnSpan="2"
+                          ItemsSource="{Binding KeyboardLetters}"
+                          VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="3" Columns="10" HorizontalAlignment="Center"></UniformGrid>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Content="{Binding}" Style="{StaticResource KeyboardButton}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Grid.Row="7" Grid.ColumnSpan="2"
+                    Content="{Binding Strings.TournamentButtonCancel}"
+                    Command="{Binding BackToMenuCommand}"
+                    HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                    Margin="0,20" Padding="10"/>
+        </Grid>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Style="{StaticResource RoundEndPanelStyle}">
+
+            <TextBlock Text="{Binding TournamentStatusMessage}"
+                       FontSize="22" FontWeight="Bold"
+                       TextWrapping="Wrap" HorizontalAlignment="Center"
+                       TextAlignment="Center" MaxWidth="500"/>
+
+            <Button Content="{Binding Strings.TournamentButtonNextRound}"
+                    Command="{Binding NextRoundCommand}"
+                    Margin="0,20" Padding="10"
+                    FontSize="18" FontWeight="Bold"/>
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Style="{StaticResource TournamentEndPanelStyle}">
+
+            <TextBlock Text="{Binding TournamentEndMessage}"
+                       FontSize="22" FontWeight="Bold"
+                       TextWrapping="Wrap" HorizontalAlignment="Center"
+                       TextAlignment="Center" MaxWidth="500"
+                       LineHeight="30"/>
+
+            <Button Content="{Binding Strings.ButtonBackToMenu}"
+                    Command="{Binding BackToMenuCommand}"
+                    Margin="0,30" Padding="10"
+                    FontSize="16"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>
