@@ -14,14 +14,16 @@ class Program
             // 1. VÄLJ SPRÅKSTRATEGI
             IUiStrings uiStrings = SelectLanguage();
 
-            // 2. SKAPA ANDRA BEROENDEN
+            // 2. SKAPA TJÄNSTER OCH VERKTYG
             IStatisticsService statsService = new SqliteHangmanService();
+            ConsoleRenderer renderer = new ConsoleRenderer(uiStrings);
+            ConsoleInput input = new ConsoleInput(uiStrings);
 
-            // 3. Skapa UI och INJICERA BÅDA beroendena
-            ConsoleUi ui = new ConsoleUi(statsService, uiStrings);
+            // 3. SKAPA HUVUDKONTROLLERN och INJICERA beroenden
+            GameController controller = new GameController(statsService, uiStrings, input, renderer);
 
-            // 4. Kör UI:t
-            await ui.RunAsync();
+            // 4. Kör applikationen
+            await controller.RunAsync();
         }
         catch (Exception ex)
         {

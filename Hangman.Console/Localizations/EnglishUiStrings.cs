@@ -10,7 +10,7 @@ namespace Hangman.Console.Localizations
     public class EnglishUiStrings : IUiStrings
     {
         // Välkomstskärm
-        public string WelcomeTitleArt => @"                   ___________.._______
+        public string WelcomeTitleArt => @"                                                              ___________.._______
      _   _    _    _   _  ____ __  __    _    _   _          | .__________))______|
     | | | |  / \  | \ | |/ ___|  \/  |  / \  | \ | |         | | / /      ||
     | |_| | / _ \ |  \| | |  _| |\/| | / _ \ |  \| |         | |/ /       ||

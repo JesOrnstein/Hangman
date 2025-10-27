@@ -10,7 +10,7 @@ namespace Hangman.Console.Localizations
     public class SwedishUiStrings : IUiStrings
     {
         // Välkomstskärm
-        public string WelcomeTitleArt => @"´                                           
+        public string WelcomeTitleArt => @"´      
       _   _   _ _ _   _    _   ____     _            ____   _   _   ____   ____   ____   ___________.._______
      | | | |   / \    | \ | | / ___|   / \          / ___| | | | | | __ \ | __ \ | ___| | .__________))______|
      | |_| |  / _ \   |  \| | | |  _  / _ \        | |  _  | | | | | |_) || |_) || |__  | | / /      || 
@@ -33,8 +33,7 @@ namespace Hangman.Console.Localizations
                                                                               |""|""""""""""""""\ \         |""|          
                                                                                         | |      \ \        | |
                                                                                         | |       \ \       | |
-                                                                                        : :        \ \      : :
-                                                                                        . .         `'      . .
+                                                                                        : :        \ \      : :                                                                                       . .         `'      . .
 ";
         public string WelcomeMessage => "\n\n          Välkommen till HÄNGA GUBBE!";
         public string WelcomePressAnyKey => "     Tryck valfri tangent för att starta...";
