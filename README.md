@@ -185,10 +185,10 @@ dotnet test
 > Byt ut platshållarna nedan mot riktiga bilder från din miljö.
 
 - `Hangman.WPF` – **GameView**  
-  `Hangman.WPF/Images/WPFScreenShow.png`
+  `docs/images/wpf-gameview.png`
 
 - `Hangman.Console` – **Spelrunda**  
-  `Hangman.WPF/Images/ConsoleScreenShot.png`
+  `docs/images/console-round.png`
 
 ---
 
