@@ -10,11 +10,11 @@ Projektet är utvecklat med fokus på ren arkitektur (Separation of Concerns), M
 
 Lösningen är uppdelad i fyra projekt för tydlig ansvarsfördelning:
 
-Projekt,Typ,Syfte
-Hangman.Core,Class Library,"Kärnlogik, spelregler, databasmodeller, providers (ord/statistik) och lokaliseringsstöd."
-Hangman.Console,Console App,Det körbara konsol-baserade spelet.
-Hangman.WPF,WPF App,NYTT: Grafiskt gränssnitt (GUI) byggt med MVVM-arkitekturen.
-HangmanTest,xUnit Test Project,Enhetstester för Hangman.Core.
+Projekt	Typ	Syfte
+Hangman.Core	Class Library	Kärnlogik, spelregler, databasmodeller, providers (ord/statistik) och lokaliseringsstöd.
+Hangman.Console	Console App	Det körbara konsol-baserade spelet.
+Hangman.WPF	WPF App	NYTT: Grafiskt gränssnitt (GUI) byggt med MVVM-arkitekturen.
+HangmanTest	xUnit Test Project	Enhetstester för Hangman.Core.
 
 ---
 
