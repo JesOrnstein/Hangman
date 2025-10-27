@@ -10,11 +10,12 @@ Projektet är utvecklat med fokus på ren arkitektur (Separation of Concerns), M
 
 Lösningen är uppdelad i fyra projekt för tydlig ansvarsfördelning:
 
-Projekt	Typ	Syfte
-Hangman.Core	Class Library	Kärnlogik, spelregler, databasmodeller, providers (ord/statistik) och lokaliseringsstöd.
-Hangman.Console	Console App	Det körbara konsol-baserade spelet.
-Hangman.WPF	WPF App	NYTT: Grafiskt gränssnitt (GUI) byggt med MVVM-arkitekturen.
-HangmanTest	xUnit Test Project	Enhetstester för Hangman.Core.
+| Projekt | Typ | Syfte |
+|---|---|---|
+| `Hangman.Core` | Class Library | Kärnlogik, spelregler, databasmodeller, providers (ord/statistik) och lokaliseringsstöd. |
+| `Hangman.Console` | Console App | Det körbara konsol-baserade spelet. |
+| `Hangman.WPF` | WPF App | **NYTT:** Grafiskt gränssnitt (GUI) byggt med MVVM-arkitekturen. |
+| `HangmanTest` | xUnit Test Project | Enhetstester för `Hangman.Core`. |
 
 ---
 
@@ -47,10 +48,53 @@ Hangman/
 ```
 ---
 
-## ⚙️ Funktioner 
+## 🚀 Kom igång (Build & Run)
 
-Kärnlogiken är komplett och testad, och gränssnittet har utökats med fullt stöd för asynkrona ordkällor.
+Här är instruktionerna för att bygga och köra projektet.
 
+### Förutsättningar
+
+* **.NET 8 SDK:** Projektet är byggt med `net8.0`.
+* **Visual Studio 2022 (Rekommenderat):** Inkludera arbetsbelastningen ".NET desktop development" för WPF.
+* **Windows-dator:** Krävs för att köra WPF-applikationen.
+
+---
+
+### Köra via Visual Studio 2022 (Rekommenderat)
+
+1.  Klona repot.
+2.  Öppna `Hangman.sln`-filen i Visual Studio.
+3.  Välj vilket projekt du vill köra:
+    * **För konsol-versionen:** Högerklicka på `Hangman.Console`-projektet i Solution Explorer och välj "Set as Startup Project".
+    * **För WPF-versionen:** Högerklicka på `Hangman.WPF`-projektet i Solution Explorer och välj "Set as Startup Project".
+4.  Tryck på **Start** (F5) för att bygga och köra.
+
+### Köra via kommandoraden (dotnet CLI)
+
+Du kan köra båda applikationerna direkt från din terminal.
+
+**Köra Konsol-versionen:**
+```bash
+# Navigera till konsol-projektets mapp
+cd Hangman/Hangman.Console
+
+# Kör applikationen
+dotnet run
+
+Köra WPF-versionen:
+
+# Navigera till WPF-projektets mapp
+cd Hangman.WPF
+
+# Kör applikationen
+dotnet run
+
+### Databashantering
+
+Databasen (Hangman.db) skapas och konfigureras automatiskt vid första körningen. 
+HangmanDbContext använder Database.EnsureCreated() för att skapa filen i bin/Debug/net8.0-mappen. Ingen manuell migrering eller setup krävs.
+
+⚙️ Funktioner
 Dubbla Gränssnitt: Spela antingen i ett klassiskt konsolfönster eller i ett modernt WPF-gränssnitt.
 
 WPF (MVVM): En fullt fungerande GUI-applikation byggd med Model-View-ViewModel-arkitektur, vilket separerar UI (View) från logik (ViewModel).
@@ -65,7 +109,7 @@ Anpassade Ordlistor: Användare kan lägga till egna ord (på svenska eller enge
 
 Turneringsläge: Ett 2-spelarläge där spelare tävlar mot varandra med 3 "liv" var.
 
-Speltimer: Varje runda (både enspelare och turnering) har en 60-sekunders timer för att öka svårighetsgraden.
+Speltimer: Varje runda (både enspelare och turnering) har en 60-sekunders timer.
 
 Asynkron Ordhantering: Hämtar ord asynkront från olika källor via IAsyncWordProvider (API, lokal lista, databas).
 
@@ -73,10 +117,7 @@ API-integration: Hämtar engelska ord från ett externt API.
 
 Ren Konsol-arkitektur: Konsolappen är uppdelad i ConsoleInput och ConsoleRenderer för bättre Separation of Concerns.
 
----
-
-## 🧪 Testning
-
+🧪 Testning
 Projektet använder xUnit. Alla tester finns i HangmanTest/GameTests.cs och täcker:
 
 Initiering av spel
@@ -91,12 +132,8 @@ Eventhantering
 
 Edge cases (tomma ord, specialtecken, case-insensitivity)
 
----
-
-## 🧠 Använd teknik
-
+🧠 Använd teknik
 .NET 8 & C# 12: Hela lösningen (Core, Console, WPF och Tester) är byggd på den senaste .NET 8-plattformen och använder moderna C# 12-funktioner som required-medlemmar i datamodeller.
-
 
 Dubbla UI-Ramverk:
 
@@ -144,13 +181,11 @@ TDD (Test Driven Development): Game.cs är utvecklad med TDD, vilket bevisas av 
 
 API-Kommunikation:
 
-HttpClient och System.Net.Http.Json används i ApiWordProvider.cs för att asynkront hämta slumpmässiga ord från ett externt webb-API. https://random-word-api.herokuapp.com/home
+HttpClient och System.Net.Http.Json används i ApiWordProvider.cs för att asynkront hämta slumpmässiga ord från ett externt webb-API.
 
----
-
-### 🧩 Avancerade C#-koncept som används
-
+🧩 Avancerade C#-koncept som används
 Här är en tabell som bryter ner några av de mer avancerade koncepten och var de används i projektet:
+
 Område,Exempel i Koden,Förklaring
 Asynkron Programmering,"async Task RunAsync(), await _wordProvider.GetWordAsync()","Hela applikationsflödet, ordhämtning och timers hanteras asynkront. I WPF (GameViewModel) säkerställer detta att UI:t aldrig ""fryser"". I Konsol (GameController) används Task.Run och CancellationTokenSource för att hantera speltimern parallellt med användarinmatning."
 Data Binding (MVVM),"INotifyPropertyChanged, RelayCommand","I WPF ärver alla ViewModels från BaseViewModel för att meddela UI:t om ändringar. ICommand (RelayCommand) hanterar knapptryckningar, vilket helt separerar logik från XAML-vyn."
@@ -159,10 +194,4 @@ Strategy Pattern,"IUiStrings, IAsyncWordProvider","Används för att ""injicera"
 LINQ,context.Highscores.OrderBy(...).Take(N),"Används flitigt för att fråga och transformera datamängder, särskilt i SqliteHangmanService för att hämta och filtrera topplistor från databasen."
 Avancerade Collections,"HashSet<char>, ObservableCollection<T>",HashSet används i Game.cs för O(1)-prestanda vid gissningskontroll. ObservableCollection används i HighscoreViewModel för att automatiskt uppdatera WPF-gränssnitten när listan ändras.
 Anpassad Felhantering,NoCustomWordsFoundException,"Projektet definierar egna undantag. När en ordlista är tom kastas ett specifikt undantag som fångas i UI-lagret (GameViewModel/GameController) och översätts till ett användarvänligt, lokaliserat meddelande."
-
----
----
-
-
-
 
