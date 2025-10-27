@@ -8,19 +8,17 @@
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
         <TextBlock Text="WPF HANGMAN" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
-        <Button Content="Spela (Enspelare)" Command="{Binding StartSinglePlayerCommand}" Margin="0,20,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
-
-        <Button Content="Spela (Tvåspelare)" Command="{Binding StartTournamentCommand}" Margin="0,5,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
-
-        <Button Content="Visa Highscores" Command="{Binding NavigateToHighscoresCommand}" Margin="0,20" Padding="5"/>
+        <Button Content="{Binding Strings.MenuPlaySingle}" Command="{Binding StartSinglePlayerCommand}" Margin="0,20,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
+        <Button Content="{Binding Strings.MenuPlayTournament}" Command="{Binding StartTournamentCommand}" Margin="0,5,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
+        <Button Content="{Binding Strings.MenuShowHighscores}" Command="{Binding NavigateToHighscoresCommand}" Margin="0,20" Padding="5"/>
 
         <Grid Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Content="Lägg till Ord" Command="{Binding NavigateToAddWordCommand}" Margin="0,0,5,0" Padding="5"/>
-            <Button Grid.Column="1" Content="Hjälp" Command="{Binding NavigateToHelpCommand}" Margin="5,0,0,0" Padding="5"/>
+            <Button Grid.Column="0" Content="{Binding Strings.MenuAddWord}" Command="{Binding NavigateToAddWordCommand}" Margin="0,0,5,0" Padding="5"/>
+            <Button Grid.Column="1" Content="{Binding Strings.MenuHelp}" Command="{Binding NavigateToHelpCommand}" Margin="5,0,0,0" Padding="5"/>
         </Grid>
 
     </StackPanel>

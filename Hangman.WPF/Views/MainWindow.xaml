@@ -10,6 +10,9 @@
         mc:Ignorable="d"
         Title="WPF Hangman" Height="650" Width="800">
     <Window.Resources>
+        <DataTemplate DataType="{x:Type viewmodels:LanguageSelectionViewModel}">
+            <views:LanguageSelectionView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewmodels:MenuViewModel}">
             <views:MenuView />
         </DataTemplate>

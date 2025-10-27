@@ -1,4 +1,4 @@
-﻿using Hangman.Console.Localizations;
+﻿using Hangman.Core.Localizations;
 using Hangman.Core;
 using Hangman.Core.Exceptions;
 using Hangman.Core.Models;

@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Hangman.Core.Providers.Db;
 using Hangman.Core.Providers.Interface;
-using Hangman.Console.Localizations;
+using Hangman.Core.Localizations;
 
 class Program
 {

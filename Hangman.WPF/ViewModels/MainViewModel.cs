@@ -4,6 +4,7 @@ using Hangman.Core.Providers.Api;
 using Hangman.Core.Providers.Interface;
 using Hangman.Core.Providers.Local;
 using System.Windows.Input;
+using Hangman.Core.Localizations; // <-- NY USING
 
 namespace Hangman.WPF.ViewModels
 {
@@ -12,6 +13,9 @@ namespace Hangman.WPF.ViewModels
         // KORRIGERING: Vi initierar med 'default!' för att lösa CS8618-varningen.
         private BaseViewModel _currentViewModel = default!;
         private readonly IStatisticsService _statisticsService;
+
+        // NY PROPERTY: Exponerar vår LocalizationProvider
+        public LocalizationProvider Strings { get; }
 
         public BaseViewModel CurrentViewModel
         {
@@ -23,49 +27,55 @@ namespace Hangman.WPF.ViewModels
             }
         }
 
-        public MainViewModel(IStatisticsService statisticsService)
+        // UPPDATERAD KONSTRUKTOR: Tar nu emot LocalizationProvider
+        public MainViewModel(IStatisticsService statisticsService, LocalizationProvider localizationProvider)
         {
             _statisticsService = statisticsService;
+            Strings = localizationProvider; // Spara instansen
 
-            // Starta på huvudmenyn
-            CurrentViewModel = new MenuViewModel(this);
+            // --- ÄNDRA DENNA RAD ---
+            // Före: CurrentViewModel = new MenuViewModel(this, Strings);
+            // Efter:
+            CurrentViewModel = new LanguageSelectionViewModel(this, Strings);
         }
 
         // --- Navigationsmetoder som anropas av andra ViewModels ---
+        // (Alla metoder skickar nu med 'Strings' där det behövs)
 
         public void NavigateToMenu()
         {
-            CurrentViewModel = new MenuViewModel(this);
+            CurrentViewModel = new MenuViewModel(this, Strings);
         }
 
         public void NavigateToHighscores()
         {
+            // HighscoreViewModel behöver ingen dynamisk text just nu,
+            // men vi kan skicka med den om vi vill.
             CurrentViewModel = new HighscoreViewModel(this, _statisticsService);
         }
 
         public void NavigateToAddWord()
         {
-            CurrentViewModel = new AddWordViewModel(this);
+            CurrentViewModel = new AddWordViewModel(this, Strings);
         }
 
-        // --- NY METOD FÖR STEG 2 ---
         public void NavigateToHelp()
         {
-            CurrentViewModel = new HelpViewModel(this);
+            CurrentViewModel = new HelpViewModel(this, Strings);
         }
 
-        // --- NY METOD FÖR ATT HANTERA SPELLÄGESVAL ---
         public void NavigateToGameSettings(GameMode mode)
         {
-            CurrentViewModel = new GameSettingsViewModel(this, mode);
+            CurrentViewModel = new GameSettingsViewModel(this, mode, Strings);
         }
+
         // ---
 
         // --- NY METOD FÖR STEG 1 ---
         public void NavigateToTournament(GameSettings settings)
         {
             IAsyncWordProvider provider = CreateProvider(settings);
-            CurrentViewModel = new TournamentViewModel(this, provider, settings);
+            CurrentViewModel = new TournamentViewModel(this, provider, settings, Strings);
         }
         // ---
 
@@ -76,7 +86,7 @@ namespace Hangman.WPF.ViewModels
             // Just nu stöder vi bara Single Player-läge i denna implementation
             // (Tournament-logiken skulle behöva en egen TwoPlayerGameViewModel)
 
-            CurrentViewModel = new GameViewModel(this, provider, _statisticsService, settings.PlayerName);
+            CurrentViewModel = new GameViewModel(this, provider, _statisticsService, settings.PlayerName, Strings);
         }
 
         private IAsyncWordProvider CreateProvider(GameSettings settings)

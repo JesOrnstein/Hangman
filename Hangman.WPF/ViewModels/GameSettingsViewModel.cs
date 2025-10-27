@@ -1,6 +1,7 @@
 ﻿using Hangman.Core.Models;
 using System.Collections.Generic;
 using System.Windows.Input;
+using Hangman.Core.Localizations; // <-- NY USING
 
 namespace Hangman.WPF.ViewModels
 {
@@ -9,6 +10,9 @@ namespace Hangman.WPF.ViewModels
     {
         private readonly MainViewModel _mainViewModel;
         private readonly GameMode _gameMode;
+
+        // NY PROPERTY: Exponera strängarna för XAML
+        public LocalizationProvider Strings { get; }
 
         // --- Egenskaper för inställningar ---
 
@@ -32,11 +36,13 @@ namespace Hangman.WPF.ViewModels
         public ICommand StartGameCommand { get; }
         public ICommand BackToMenuCommand { get; }
 
-        public GameSettingsViewModel(MainViewModel mainViewModel, GameMode mode)
+        // UPPDATERAD KONSTRUKTOR
+        public GameSettingsViewModel(MainViewModel mainViewModel, GameMode mode, LocalizationProvider strings)
         {
             _mainViewModel = mainViewModel;
             _gameMode = mode;
             IsTournamentMode = (mode == GameMode.Tournament);
+            Strings = strings; // Spara instansen
 
             // Skapa standardinställningar
             CurrentSettings = new GameSettings();

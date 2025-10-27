@@ -1,6 +1,7 @@
 ﻿using Hangman.Core.Models;
 using System.Collections.Generic;
 using System.Windows.Input;
+using Hangman.Core.Localizations; // <-- NY USING
 
 namespace Hangman.WPF.ViewModels
 {
@@ -8,15 +9,20 @@ namespace Hangman.WPF.ViewModels
     {
         private readonly MainViewModel _mainViewModel;
 
+        // NY PROPERTY: Exponera strängarna för XAML-bindning
+        public LocalizationProvider Strings { get; }
+
         public ICommand StartSinglePlayerCommand { get; }
         public ICommand NavigateToHighscoresCommand { get; }
         public ICommand NavigateToAddWordCommand { get; }
         public ICommand StartTournamentCommand { get; }
         public ICommand NavigateToHelpCommand { get; }
 
-        public MenuViewModel(MainViewModel mainViewModel)
+        // UPPDATERAD KONSTRUKTOR
+        public MenuViewModel(MainViewModel mainViewModel, LocalizationProvider strings)
         {
             _mainViewModel = mainViewModel;
+            Strings = strings; // Spara instansen
 
             // --- KOMMANDON ÄR UPPDATERADE ---
             // Använder den nya navigeringsmetoden

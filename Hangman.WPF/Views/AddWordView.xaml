@@ -6,9 +6,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              d:DesignHeight="450" d:DesignWidth="800">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="350">
-        <TextBlock Text="Lägg till Eget Ord" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
-        <TextBlock Text="Ord (A-Ö):" Margin="0,10,0,0"/>
+        <TextBlock Text="{Binding Strings.AddWordTitle}" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+        <TextBlock Text="{Binding Strings.AddWordPrompt}" Margin="0,10,0,0"/>
         <TextBox Text="{Binding NewWord, UpdateSourceTrigger=PropertyChanged}" Margin="0,5" Padding="5" FontSize="16"/>
 
         <TextBlock Text="Språk:" Margin="0,10,0,0"/>

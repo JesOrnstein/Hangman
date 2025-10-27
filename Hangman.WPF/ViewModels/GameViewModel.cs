@@ -10,6 +10,7 @@ using Hangman.Core.Exceptions;
 using System.Windows;
 using Hangman.Core.Providers.Api;
 using Hangman.Core.Providers.Local;
+using Hangman.Core.Localizations; // <-- NY USING
 
 namespace Hangman.WPF.ViewModels
 {
@@ -20,6 +21,7 @@ namespace Hangman.WPF.ViewModels
         private readonly IStatisticsService _statisticsService;
         private readonly Game _game;
         private readonly DispatcherTimer _timer;
+        private readonly LocalizationProvider _strings; // <-- NYTT FÄLT
 
         private string _playerName;
         private int _consecutiveWins = 0;
@@ -27,22 +29,16 @@ namespace Hangman.WPF.ViewModels
         // --- Animationsramar (från ConsoleRenderer) ---
         private static readonly string[] _animFrames =
         {
-            "*creak...* ", // Frame 0
-            " *creak...* ", // Frame 1
-            "  *creak...* ", // Frame 2
-            "   *creak...* ", // Frame 3
-            "    *creak...* ", // Frame 4
-            "     *creak...*", // Frame 5
-            "    *creak...* ", // Frame 6
-            "   *creak...* ", // Frame 7
-            "  *creak...* ", // Frame 8
-            " *creak...* ", // Frame 9
-            "*creak...* ", // Frame 10
-            "               "  // Frame 11 (paus)
+            "*creak...* ", "* *creak...* ", "  *creak...* ", "   *creak...* ", "    *creak...* ", "     *creak...*",
+            "    *creak...* ", "   *creak...* ", "  *creak...* ", " *creak...* ", "*creak...* ", "               "
         };
         private const int AnimFrameCount = 12;
 
         // --- Bindningsbara Egenskaper ---
+
+        // NY PROPERTY: Exponera strängarna för XAML
+        public LocalizationProvider Strings { get; }
+
         private string _maskedWord = "Laddar ord...";
         public string MaskedWord { get => _maskedWord; set { _maskedWord = value; OnPropertyChanged(); } }
 
@@ -55,7 +51,9 @@ namespace Hangman.WPF.ViewModels
         private int _secondsLeft = 60;
         public int SecondsLeft { get => _secondsLeft; set { _secondsLeft = value; OnPropertyChanged(); } }
 
-        // NY PROPERTY FÖR ANIMATION
+        // NY PROPERTY: Formaterar timer-texten via LocalizationProvider
+        public string TimerText => _strings.RoundTimerDisplay(SecondsLeft);
+
         private string _creakAnimationText = "";
         public string CreakAnimationText { get => _creakAnimationText; set { _creakAnimationText = value; OnPropertyChanged(); } }
 
@@ -70,18 +68,20 @@ namespace Hangman.WPF.ViewModels
         public ICommand BackToMenuCommand { get; }
         public ICommand BackToMenuFinalCommand { get; }
 
-        // En lista med bokstäver för tangentbordet
         public char[] KeyboardLetters { get; } = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".ToCharArray();
 
-        public GameViewModel(MainViewModel mainViewModel, IAsyncWordProvider wordProvider, IStatisticsService statisticsService, string playerName)
+        // UPPDATERAD KONSTRUKTOR
+        public GameViewModel(MainViewModel mainViewModel, IAsyncWordProvider wordProvider, IStatisticsService statisticsService, string playerName, LocalizationProvider strings)
         {
             _mainViewModel = mainViewModel;
             _wordProvider = wordProvider;
             _statisticsService = statisticsService;
             _playerName = playerName;
+            _strings = strings; // Spara för C#-logik
+            Strings = strings;  // Exponera för XAML
             _game = new Game(6);
 
-            // Prenumerera på events från din modell!
+            // Prenumerera på events
             _game.LetterGuessed += OnGameUpdated;
             _game.WrongLetterGuessed += OnGameUpdated;
             _game.GameEnded += OnGameEnded;
@@ -92,25 +92,22 @@ namespace Hangman.WPF.ViewModels
             BackToMenuCommand = new RelayCommand(_ => ExitGame(saveScore: false));
             BackToMenuFinalCommand = new RelayCommand(_ => ExitGame(saveScore: true));
 
-            // Timer (baserad på ConsoleRenderer)
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
+            // Timer
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _timer.Tick += Timer_Tick;
 
-            // Starta första rundan
             Task.Run(StartNewRound);
         }
 
+        // UPPDATERAD LOGIK: Använder _strings för felmeddelanden
         private async Task StartNewRound()
         {
             IsGameInProgress = true;
             GameEndMessage = string.Empty;
-            MaskedWord = "Hämtar ord...";
+            MaskedWord = _strings.FeedbackFetchingWord("..."); // "Laddar ord..."
             UsedLetters = "";
             GallowsImageSource = "/Images/stage_0.png";
-            CreakAnimationText = string.Empty; // Återställ animation
+            CreakAnimationText = string.Empty;
 
             try
             {
@@ -119,14 +116,21 @@ namespace Hangman.WPF.ViewModels
             }
             catch (NoCustomWordsFoundException ex)
             {
-                //
-                MessageBox.Show($"Kunde inte starta spelet: Inga anpassade ord hittades för {ex.Difficulty} ({ex.Language}).", "Ordlistefel");
+                // ÄNDRAD
+                MessageBox.Show(
+                    _strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language),
+                    _strings.SelectWordSourceTitle // "Ordlistefel"
+                );
                 _mainViewModel.NavigateToMenu();
                 return;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Kunde inte hämta ord: {ex.Message}", "API-fel");
+                // ÄNDRAD
+                MessageBox.Show(
+                    _strings.ErrorCouldNotStartGame(ex.Message),
+                    "API-fel" // Kan också läggas i IUiStrings
+                );
                 _game.StartNew("APIERROR"); // Fallback
             }
 
@@ -138,23 +142,23 @@ namespace Hangman.WPF.ViewModels
         private void Timer_Tick(object? sender, EventArgs e)
         {
             SecondsLeft--;
+            OnPropertyChanged(nameof(TimerText)); // Meddela UI att timer-texten ändrats
 
-            // NYTT: Uppdatera animationen
             int frame = SecondsLeft % AnimFrameCount;
             CreakAnimationText = _animFrames[frame];
-            // ---
 
             if (SecondsLeft <= 0)
             {
                 _timer.Stop();
-                CreakAnimationText = string.Empty; // Rensa
-                GameEndMessage = "Tiden är ute!"; //
+                CreakAnimationText = string.Empty;
+                GameEndMessage = _strings.RoundTimerExpired; // ÄNDRAD
                 _game.ForceLose();
             }
         }
 
         private bool CanGuess(object? parameter)
         {
+            // ... (logik oförändrad) ...
             if (parameter is char letter)
             {
                 return IsGameInProgress && !_game.UsedLetters.Contains(letter);
@@ -164,6 +168,7 @@ namespace Hangman.WPF.ViewModels
 
         private void MakeGuess(object? parameter)
         {
+            // ... (logik oförändrad) ...
             if (parameter is char letter)
             {
                 _game.Guess(letter);
@@ -175,22 +180,27 @@ namespace Hangman.WPF.ViewModels
             UpdateUiProperties();
         }
 
+        // UPPDATERAD LOGIK: Använder _strings för feedback
         private async void OnGameEnded(object? sender, GameStatus status)
         {
             _timer.Stop();
             IsGameInProgress = false;
-            CreakAnimationText = string.Empty; // Rensa
+            CreakAnimationText = string.Empty;
 
             if (status == GameStatus.Won)
             {
                 _consecutiveWins++;
-                GameEndMessage = $"GRATTIS, DU VANN! Ordet var: {_game.Secret}\nVinster i rad: {_consecutiveWins}"; //
+                // ÄNDRAD
+                GameEndMessage = $"{_strings.EndScreenCongrats} {_strings.EndScreenCorrectWord(_game.Secret)}\n{_strings.FeedbackWonRound(_consecutiveWins)}";
             }
             else // Lost
             {
-                GameEndMessage = $"DU FÖRLORADE... Ordet var: {_game.Secret}"; //
+                // ÄNDRAD (visar bara tiden om det var anledningen)
+                if (string.IsNullOrEmpty(GameEndMessage))
+                {
+                    GameEndMessage = $"{_strings.EndScreenLost} {_strings.EndScreenCorrectWord(_game.Secret)}";
+                }
 
-                // Om spelaren förlorar, spara highscore och återställ
                 if (_consecutiveWins > 0)
                 {
                     await SaveHighscoreAsync();
@@ -202,17 +212,15 @@ namespace Hangman.WPF.ViewModels
 
         private void UpdateUiProperties()
         {
-            // Lägger till mellanrum i strängen, precis som i ConsoleRenderer
             MaskedWord = string.Join(" ", _game.GetMaskedWord().ToCharArray());
-
-            UsedLetters = $"Gissade: {string.Join(", ", _game.UsedLetters.OrderBy(c => c))}";
+            UsedLetters = $"{_strings.RoundGuessedLetters} {string.Join(", ", _game.UsedLetters.OrderBy(c => c))}"; // ÄNDRAD
             GallowsImageSource = $"/Images/stage_{_game.Mistakes}.png";
         }
 
         private async void ExitGame(bool saveScore)
         {
             _timer.Stop();
-            CreakAnimationText = string.Empty; // Rensa
+            CreakAnimationText = string.Empty;
             if (saveScore && _consecutiveWins > 0)
             {
                 await SaveHighscoreAsync();
@@ -220,11 +228,9 @@ namespace Hangman.WPF.ViewModels
             _mainViewModel.NavigateToMenu();
         }
 
-        // --- KORRIGERAD METOD ---
         private async Task SaveHighscoreAsync()
         {
-            // Försöker ta reda på svårighetsgraden från providern.
-            // Detta är lite osäkert (använder reflektion), men fungerar för de kända typerna.
+            // ... (logik oförändrad) ...
             WordDifficulty difficulty;
             if (_wordProvider is ApiWordProvider api)
             {
@@ -240,10 +246,9 @@ namespace Hangman.WPF.ViewModels
             }
             else
             {
-                return; // Kan inte avgöra svårighetsgrad för okänd provider
+                return;
             }
 
-            // KORRIGERING: Använd object initializer för att uppfylla 'required'
             var newScore = new HighscoreEntry
             {
                 PlayerName = _playerName,
@@ -251,7 +256,7 @@ namespace Hangman.WPF.ViewModels
                 Difficulty = difficulty
             };
 
-            await _statisticsService.SaveHighscoreAsync(newScore); //
+            await _statisticsService.SaveHighscoreAsync(newScore);
         }
     }
 }

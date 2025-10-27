@@ -1,4 +1,4 @@
-﻿using Hangman.Console.Localizations;
+﻿using Hangman.Core.Localizations;
 using Hangman.Core.Models;
 using System.Text;
 

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Hangman.Core.Models;
 
-namespace Hangman.Console.Localizations
+namespace Hangman.Core.Localizations
 {
     /// <summary>
     /// Definierar kontraktet för alla UI-strängar (Strategy Pattern).

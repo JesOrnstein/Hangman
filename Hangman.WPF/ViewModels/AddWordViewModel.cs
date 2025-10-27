@@ -5,12 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Hangman.Core.Localizations; // <-- NY USING
 
 namespace Hangman.WPF.ViewModels
 {
     public class AddWordViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly LocalizationProvider _strings; // <-- NYTT FÄLT
+
+        // NY PROPERTY: Exponera strängarna för XAML
+        public LocalizationProvider Strings { get; }
 
         private string _newWord = "";
         public string NewWord { get => _newWord; set { _newWord = value; OnPropertyChanged(); } }
@@ -26,9 +31,13 @@ namespace Hangman.WPF.ViewModels
         public ICommand AddWordCommand { get; }
         public ICommand BackToMenuCommand { get; }
 
-        public AddWordViewModel(MainViewModel mainViewModel)
+        // UPPDATERAD KONSTRUKTOR
+        public AddWordViewModel(MainViewModel mainViewModel, LocalizationProvider strings)
         {
             _mainViewModel = mainViewModel;
+            _strings = strings; // Spara för C#-logik
+            Strings = strings;  // Exponera för XAML
+
             AddWordCommand = new RelayCommand(async _ => await AddWord(), _ => CanAddWord());
             BackToMenuCommand = new RelayCommand(_ => _mainViewModel.NavigateToMenu());
         }
@@ -38,6 +47,7 @@ namespace Hangman.WPF.ViewModels
             return !string.IsNullOrWhiteSpace(NewWord) && NewWord.All(char.IsLetter);
         }
 
+        // UPPDATERAD LOGIK: Använder _strings för feedback
         private async Task AddWord()
         {
             string word = NewWord.ToUpperInvariant();
@@ -45,25 +55,27 @@ namespace Hangman.WPF.ViewModels
 
             try
             {
-                //
                 var provider = new CustomWordProvider(difficulty, SelectedLanguage);
                 await provider.AddWordAsync(word, difficulty, SelectedLanguage);
-                FeedbackMessage = $"Ordet '{word}' lades till ({SelectedLanguage} - {difficulty})!"; //
+
+                // ÄNDRAD
+                FeedbackMessage = _strings.AddWordSuccess(word, difficulty, SelectedLanguage);
                 NewWord = ""; // Rensa fältet
             }
             catch (WordAlreadyExistsException ex)
             {
-                FeedbackMessage = $"Ordet '{ex.Word}' finns redan för {ex.Difficulty} ({ex.Language})."; //
+                // ÄNDRAD
+                FeedbackMessage = _strings.ErrorWordAlreadyExists(ex.Word, ex.Difficulty, ex.Language);
             }
             catch (System.Exception ex)
             {
-                FeedbackMessage = $"Ett databasfel inträffade: {ex.Message}"; //
+                // ÄNDRAD
+                FeedbackMessage = _strings.CommonErrorDatabaseError(ex.Message);
             }
         }
 
         private WordDifficulty GetDifficultyByLength(string word)
         {
-            //
             if (word.Length <= 4) return WordDifficulty.Easy;
             if (word.Length <= 7) return WordDifficulty.Medium;
             return WordDifficulty.Hard;

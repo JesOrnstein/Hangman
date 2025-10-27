@@ -39,9 +39,8 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-
             <TextBlock Grid.Row="0"
-                       Text="{Binding SecondsLeft, StringFormat='Tid kvar: {0}s'}"
+                       Text="{Binding TimerText}"
                        FontSize="20"
                        FontWeight="Bold"
                        Foreground="Crimson"
@@ -100,7 +99,6 @@
                     Padding="10"/>
         </Grid>
 
-
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel.Style>
                 <Style TargetType="StackPanel">
@@ -119,6 +117,7 @@
                        TextWrapping="Wrap"
                        HorizontalAlignment="Center"
                        TextAlignment="Center"/>
+
             <Button Content="Spela Igen"
                     Command="{Binding PlayAgainCommand}"
                     Margin="0,20"
