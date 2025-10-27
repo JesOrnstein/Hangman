@@ -414,7 +414,7 @@ namespace Hangman.IO
             Console.ReadKey(true);
         }
 
-        // --- Huvudloop för 2-spelarturnering ---
+        // --- Huvudloop för 2-spelarturnering (MODIFIERAD) ---
         private async Task PlayTournamentAsync()
         {
             Console.Clear();
@@ -449,9 +449,18 @@ namespace Hangman.IO
                 string secret;
                 try
                 {
+                    // UPPDATERAD: StartNewRoundAsync kastar ett undantag
+                    // om spelet är slut (Won, Lost eller Draw)
                     secret = await tournament.StartNewRoundAsync();
                 }
-                catch (Exception ex)
+                // NY CATCH
+                catch (InvalidOperationException)
+                {
+                    // Turneringen är avslutad (Won, Lost, Draw).
+                    // Bryt loopen för att visa slutresultatet.
+                    break;
+                }
+                catch (Exception ex) // Hantera "riktiga" fel (t.ex. nätverksfel)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("\nKunde inte hämta ord till turneringen:");
@@ -468,6 +477,8 @@ namespace Hangman.IO
                 // Om rundan avbröts (ForceLose), avbryt hela turneringen
                 if (_game?.Status == GameStatus.Lost && _feedbackMessage == "Rundan avbröts av spelaren.")
                 {
+                    // Se till att liven uppdateras innan vi bryter
+                    tournament.HandleRoundEnd(GameStatus.Lost);
                     Console.WriteLine("Turneringen avbröts.");
                     break;
                 }
@@ -484,18 +495,42 @@ namespace Hangman.IO
                 }
             }
 
-            // 4. Visa Vinnaren (endast om turneringen inte avbröts)
+            // 4. Visa Vinnaren (UPPDATERAD MED DRAW-LOGIK)
             if (_feedbackMessage != "Rundan avbröts av spelaren.")
             {
-                Hangman.Core.Player winner = tournament.GetWinner()!;
-                Hangman.Core.Player loser = (winner == tournament.Player1) ? tournament.Player2 : tournament.Player1;
+                // NY KONTROLL FÖR OAVGJORT
+                if (tournament.TournamentStatus == GameStatus.Draw)
+                {
+                    Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"\n--- TURNERING AVSLUTAD ---");
+                    Console.WriteLine("OAVGJORT! Båda spelarna förlorade alla sina liv.");
+                    Console.ResetColor();
+                }
+                // GAMMAL LOGIK I EN 'ELSE'
+                else
+                {
+                    Hangman.Core.Player? winner = tournament.GetWinner(); // Nullbar
 
-                Console.Clear();
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\n--- TURNERING AVSLUTAD ---");
-                Console.WriteLine($"GRATTIS, {winner.Name} VANN TURNERINGEN!");
-                Console.ResetColor();
-                Console.WriteLine($"{loser.Name} förlorade alla sina liv. Vunna rundor:");
+                    if (winner != null)
+                    {
+                        Hangman.Core.Player loser = (winner == tournament.Player1) ? tournament.Player2 : tournament.Player1;
+
+                        Console.Clear();
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"\n--- TURNERING AVSLUTAD ---");
+                        Console.WriteLine($"GRATTIS, {winner.Name} VANN TURNERINGEN!");
+                        Console.ResetColor();
+                        Console.WriteLine($"{loser.Name} förlorade alla sina liv. Vunna rundor:");
+                    }
+                    else
+                    {
+                        // Fallback om något gick fel (borde inte hända om Draw hanteras)
+                        Console.WriteLine("\nTurneringen avslutad (Oväntat slut).");
+                    }
+                }
+
+                // Visa alltid slutpoängen (Flyttad ut ur 'else')
                 Console.WriteLine($"- {p1Name}: {tournament.Player1.Wins} rundor");
                 Console.WriteLine($"- {p2Name}: {tournament.Player2.Wins} rundor");
             }

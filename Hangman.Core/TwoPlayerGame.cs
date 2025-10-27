@@ -52,9 +52,6 @@ namespace Hangman.Core
         /// <summary>
         /// Initierar en ny 2-spelarturnering.
         /// </summary>
-        /// <param name="p1Name">Namnet på spelare 1.</param>
-        /// <param name="p2Name">Namnet på spelare 2.</param>
-        /// <param name="wordProvider">Den ordkälla som ska användas för varje runda (t.ex. en lokal lista).</param>
         public TwoPlayerGame(string p1Name, string p2Name, IAsyncWordProvider wordProvider)
         {
             Player1 = new Player(p1Name, MaxLives);
@@ -67,16 +64,45 @@ namespace Hangman.Core
 
         /// <summary>
         /// Startar en ny spelrunda. Ordet hämtas från den konfigurerade ordkällan.
+        /// (UPPDATERAD MED NY VINST-LOGIK)
         /// </summary>
         /// <returns>Det hemliga ordet.</returns>
         public async Task<string> StartNewRoundAsync()
         {
+            // --- NY LOGIK: Kontrollera turneringsstatus FÖRE RUNDAN STARTAR ---
+            // "CurrentGuesser" är den som *ska* spela nu.
+            // "opponent" är den som spelade *förra* rundan.
+            Player opponent = (CurrentGuesser == Player1) ? Player2 : Player1;
+
+            if (CurrentGuesser!.Lives <= 0)
+            {
+                // Spelaren vars tur det ÄR har 0 liv.
+                if (opponent.Lives <= 0)
+                {
+                    // Motståndaren har OCKSÅ 0 liv (båda förlorade sin sista runda).
+                    TournamentStatus = GameStatus.Draw;
+                }
+                else
+                {
+                    // CurrentGuesser har 0 liv, men motståndaren har > 0.
+                    // CurrentGuesser förlorar, motståndaren vinner.
+                    TournamentStatus = GameStatus.Lost; // CurrentGuesser förlorade
+                }
+            }
+            // OBS: Vi kollar INTE "else if (opponent.Lives <= 0)"
+            // Om motståndaren har 0 liv, men CurrentGuesser har liv,
+            // MÅSTE CurrentGuesser fortfarande spela sin runda (för att ev. vinna och återställa liv).
+            // Om de misslyckas, får de 0 liv, och nästa runda blir Draw.
+            // --- SLUT PÅ NY LOGIK ---
+
+
             if (TournamentStatus != GameStatus.InProgress)
             {
+                // Signalera till UI att spelet är slut och inget ord kan hämtas.
                 throw new InvalidOperationException("Turneringen är avslutad.");
             }
 
-            // Hämta ordet asynkront
+            // Hämta ordet asynkront (Gammal logik)
             string secret = await _wordProvider.GetWordAsync();
 
             // Skapa en ny Game-instans med 6 maxfel
@@ -88,6 +114,7 @@ namespace Hangman.Core
 
         /// <summary>
         /// Hanterar resultatet av den nyss avslutade rundan och uppdaterar spelarnas liv och turordning.
+        /// (FÖRENKLAD)
         /// </summary>
         /// <param name="roundResult">Resultatet av rundan (Won eller Lost).</param>
         public void HandleRoundEnd(GameStatus roundResult)
@@ -114,32 +141,37 @@ namespace Hangman.Core
             }
 
             // 2. Kontrollera Vinstvillkor (Turneringen Slut)
-            if (guessingPlayer.Lives <= 0)
-            {
-                TournamentStatus = GameStatus.Lost; // Turneringen avslutas
-                // Den andra spelaren (som inte gissade) är vinnaren
-            }
+            // === DENNA LOGIK ÄR BORTTAGEN HÄRIFRÅN ===
+            // (Den ligger nu i StartNewRoundAsync)
 
-            // 3. Byt Gissare (om turneringen fortsätter)
-            if (TournamentStatus == GameStatus.InProgress)
-            {
-                // Turordningen byts.
-                CurrentGuesser = (CurrentGuesser == Player1) ? Player2 : Player1;
-            }
+
+            // 3. Byt Gissare (alltid, oavsett status)
+            CurrentGuesser = (CurrentGuesser == Player1) ? Player2 : Player1;
         }
 
         /// <summary>
-        /// Returnerar den spelare som vann turneringen, eller null om den fortfarande pågår.
+        /// Returnerar den spelare som vann turneringen, eller null om den fortfarande pågår eller blev oavgjord.
+        /// (UPPDATERAD LOGIK)
         /// </summary>
         public Player? GetWinner()
         {
-            if (TournamentStatus != GameStatus.Lost) return null;
+            // Denna anropas bara när TournamentStatus INTE är InProgress eller Draw.
+            // Vinnaren är den som har liv kvar.
 
-            // Vinnaren är den spelare som INTE fick 0 liv.
-            if (Player1.Lives <= 0) return Player2;
-            if (Player2.Lives <= 0) return Player1;
+            if (Player1.Lives > 0 && Player2.Lives <= 0)
+            {
+                return Player1;
+            }
 
-            return null; // Skulle inte hända om TournamentStatus är Lost
+            if (Player2.Lives > 0 && Player1.Lives <= 0)
+            {
+                return Player2;
+            }
+
+            // Om TournamentStatus är Draw (båda har 0 liv) -> return null.
+            // Om TournamentStatus är InProgress -> return null.
+
+            return null;
         }
     }
 }

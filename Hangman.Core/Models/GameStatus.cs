@@ -11,6 +11,7 @@ namespace Hangman.Core.Models
     {
         InProgress,
         Won,
-        Lost
+        Lost,
+        Draw
     }
 }
