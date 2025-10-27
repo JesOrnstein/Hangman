@@ -35,11 +35,13 @@ namespace Hangman.Console.Localizations
         string SelectWordSourceTitle { get; }
         string SelectWordSourceApi { get; }
         string SelectWordSourceLocal { get; }
-        string SelectWordSourceCustom { get; }
+        string SelectWordSourceCustomSwedish { get; } // ÄNDRAD
+        string SelectWordSourceCustomEnglish { get; } // NY
         string SelectWordSourcePrompt { get; }
         string FeedbackWordSourceApi { get; }
         string FeedbackWordSourceLocal { get; }
-        string FeedbackWordSourceCustom { get; }
+        string FeedbackWordSourceCustomSwedish { get; } // ÄNDRAD
+        string FeedbackWordSourceCustomEnglish { get; } // NY
 
         // Val av svårighetsgrad
         string SelectDifficultyTitle(string source);
@@ -99,8 +101,12 @@ namespace Hangman.Console.Localizations
         string AddWordTitle { get; }
         string AddWordPrompt { get; }
         string AddWordInvalid { get; }
-        string AddWordSuccess(string word, WordDifficulty difficulty);
+        string AddWordSuccess(string word, WordDifficulty difficulty, WordLanguage language); // ÄNDRAD
         string AddWordErrorExists(string message);
+        string AddWordSelectLanguageTitle { get; } // NY
+        string AddWordSelectLanguagePrompt { get; } // NY
+        string AddWordLanguageSwedish { get; } // NY
+        string AddWordLanguageEnglish { get; } // NY
 
         // Hjälpskärm
         string HelpTitle { get; }

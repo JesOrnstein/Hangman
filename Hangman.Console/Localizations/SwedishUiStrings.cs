@@ -54,11 +54,13 @@ namespace Hangman.Console.Localizations
         public string SelectWordSourceTitle => "--- VÄLJ ORDLISTA ---";
         public string SelectWordSourceApi => "1. Engelska (API - olika längd)";
         public string SelectWordSourceLocal => "2. Svenska (Lokal lista)";
-        public string SelectWordSourceCustom => "3. Anpassad Ordlista (Dina sparade ord)";
-        public string SelectWordSourcePrompt => "\nVälj (1-3): ";
+        public string SelectWordSourceCustomSwedish => "3. Anpassad Ordlista (Svenska)"; // ÄNDRAD
+        public string SelectWordSourceCustomEnglish => "4. Anpassad Ordlista (Engelska)"; // NY
+        public string SelectWordSourcePrompt => "\nVälj (1-4): "; // ÄNDRAD
         public string FeedbackWordSourceApi => "Engelska (API)";
         public string FeedbackWordSourceLocal => "Svenska (Lokal)";
-        public string FeedbackWordSourceCustom => "Anpassad Ordlista";
+        public string FeedbackWordSourceCustomSwedish => "Anpassad Ordlista (Svenska)"; // ÄNDRAD
+        public string FeedbackWordSourceCustomEnglish => "Anpassad Ordlista (Engelska)"; // NY
 
         // Val av svårighetsgrad
         public string SelectDifficultyTitle(string source) => $"--- VÄLJ SVÅRIGHETSGRAD ({source}) ---";
@@ -120,8 +122,12 @@ namespace Hangman.Console.Localizations
         public string AddWordTitle => "--- LÄGG TILL NYTT ORD ---";
         public string AddWordPrompt => "Ange ordet (A-Ö): ";
         public string AddWordInvalid => "\nOgiltigt ord. Ange endast bokstäver.";
-        public string AddWordSuccess(string word, WordDifficulty difficulty) => $"\nOrdet '{word}' har lagts till i den anpassade listan ({difficulty})!";
+        public string AddWordSuccess(string word, WordDifficulty difficulty, WordLanguage language) => $"\nOrdet '{word}' har lagts till i den anpassade listan ({language} - {difficulty})!"; // ÄNDRAD
         public string AddWordErrorExists(string message) => $"\nKunde inte lägga till ordet: {message}";
+        public string AddWordSelectLanguageTitle => "--- VÄLJ SPRÅK FÖR ORDET ---"; // NY
+        public string AddWordSelectLanguagePrompt => "\nVälj språk (1-2): "; // NY
+        public string AddWordLanguageSwedish => "1. Svenska"; // NY
+        public string AddWordLanguageEnglish => "2. Engelska"; // NY
 
         // Hjälpskärm
         public string HelpTitle => "--- HJÄLP / HUR MAN SPELAR ---";
@@ -133,7 +139,7 @@ namespace Hangman.Console.Localizations
         public string HelpSourcesTitle => "\nOrdkällor:";
         public string HelpSourcesLine1 => "  API: Engelska ord med längd baserat på svårighetsgrad.";
         public string HelpSourcesLine2 => "  Lokal: Svenska ord från en inbyggd lista.";
-        public string HelpSourcesLine3 => "  Anpassad: Ord som du själv har lagt till.";
+        public string HelpSourcesLine3 => "  Anpassad: Ord som du själv har lagt till (både svenska och engelska)."; // ÄNDRAD
 
         // Spelrunda
         public string RoundTitleNewRound => "--- NY RUNDA STARTAD ---";

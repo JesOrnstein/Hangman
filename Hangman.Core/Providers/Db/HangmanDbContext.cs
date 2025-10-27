@@ -26,7 +26,7 @@ namespace Hangman.Core.Providers.Db
             string baseDir = AppContext.BaseDirectory;
 
             // Filen sparas direkt i exekveringsmappen
-            _databasePath = Path.Combine(baseDir, "HangmanHighscores.db");
+            _databasePath = Path.Combine(baseDir, "Hangman.db");
 
             // Skapa databasfilen och schemat om det inte redan finns
             Database.EnsureCreated();
@@ -44,9 +44,9 @@ namespace Hangman.Core.Providers.Db
                 .HasIndex(h => new { h.PlayerName, h.Difficulty })
                 .IsUnique();
 
-            // NYTT: Gör kombinationen av ord och svårighetsgrad unik för CustomWords
+            // NYTT/MODIFIERAT: Gör kombinationen av ord, svårighetsgrad OCH språk unik
             modelBuilder.Entity<CustomWordEntry>()
-                .HasIndex(w => new { w.Word, w.Difficulty })
+                .HasIndex(w => new { w.Word, w.Difficulty, w.Language })
                 .IsUnique();
         }
     }

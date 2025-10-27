@@ -304,7 +304,7 @@ namespace Hangman.Console
             System.Console.ReadKey(true);
         }
 
-        // --- Lägg till anpassat ord ---
+        // --- (MODIFIERAD) Lägg till anpassat ord ---
         private async Task AddCustomWordAsync()
         {
             System.Console.Clear();
@@ -316,7 +316,7 @@ namespace Hangman.Console
             {
                 word = GetInputString(_strings.AddWordPrompt);
 
-                if (word == null) return;
+                if (word == null) return; // Användaren avbröt med Escape
 
                 if (string.IsNullOrWhiteSpace(word) || !word.All(char.IsLetter))
                 {
@@ -326,16 +326,24 @@ namespace Hangman.Console
 
             word = word.ToUpperInvariant();
 
-            WordDifficulty? difficulty = SelectDifficulty("Anpassat Ord"); // TODO: Denna text bör också in i IUiStrings
-            if (difficulty == null) return;
+            // 1. Svårighetsgrad bestäms automatiskt av längden
+            WordDifficulty calculatedDifficulty = GetDifficultyByLength(word);
+
+            // 2. NYTT: Fråga användaren om språk
+            WordLanguage? language = SelectLanguage();
+            if (language == null) return; // Användaren avbröt
 
             try
             {
-                var saver = new CustomWordProvider(difficulty.Value);
-                await saver.AddWordAsync(word, difficulty.Value);
+                // 3. Skapa providern med båda värdena
+                var saver = new CustomWordProvider(calculatedDifficulty, language.Value);
+
+                // 4. Spara ordet med alla tre värden
+                await saver.AddWordAsync(word, calculatedDifficulty, language.Value);
 
                 System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.WriteLine(_strings.AddWordSuccess(word, difficulty.Value));
+                // 5. Meddela användaren med all information
+                System.Console.WriteLine(_strings.AddWordSuccess(word, calculatedDifficulty, language.Value));
                 System.Console.ResetColor();
             }
             catch (InvalidOperationException ex)
@@ -354,6 +362,55 @@ namespace Hangman.Console
             System.Console.WriteLine(_strings.CommonPressAnyKeyToContinue);
             System.Console.ReadKey(true);
         }
+
+        // --- Hjälpmetod för att bestämma svårighetsgrad ---
+        private WordDifficulty GetDifficultyByLength(string word)
+        {
+            int length = word.Length;
+
+            if (length <= 4) // 3-4 (eller färre)
+            {
+                return WordDifficulty.Easy;
+            }
+            if (length <= 7) // 5-7
+            {
+                return WordDifficulty.Medium;
+            }
+            return WordDifficulty.Hard; // 8+
+        }
+
+        // --- NY HJÄLPMETOD: För att välja språk ---
+        private WordLanguage? SelectLanguage()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine(_strings.AddWordSelectLanguageTitle);
+            System.Console.WriteLine(_strings.AddWordLanguageSwedish);
+            System.Console.WriteLine(_strings.AddWordLanguageEnglish);
+            System.Console.WriteLine(_strings.CommonPressEscapeToCancel);
+            System.Console.Write(_strings.AddWordSelectLanguagePrompt);
+
+            while (true)
+            {
+                var key = System.Console.ReadKey(intercept: true);
+                switch (key.Key)
+                {
+                    case ConsoleKey.D1:
+                    case ConsoleKey.NumPad1:
+                        System.Console.WriteLine(_strings.AddWordLanguageSwedish);
+                        return WordLanguage.Swedish;
+
+                    case ConsoleKey.D2:
+                    case ConsoleKey.NumPad2:
+                        System.Console.WriteLine(_strings.AddWordLanguageEnglish);
+                        return WordLanguage.English;
+
+                    case ConsoleKey.Escape:
+                        System.Console.WriteLine(_strings.CommonFeedbackCancelling);
+                        return null;
+                }
+            }
+        }
+
 
         // --- Hjälp/How to Play ---
         private void ShowHelpScreen()
@@ -484,13 +541,15 @@ namespace Hangman.Console
             System.Console.ReadKey(true);
         }
 
+        // --- (MODIFIERAD) Val av ordkälla ---
         private (IAsyncWordProvider? Provider, WordDifficulty? Difficulty) SelectWordSource()
         {
             System.Console.Clear();
             System.Console.WriteLine(_strings.SelectWordSourceTitle);
             System.Console.WriteLine(_strings.SelectWordSourceApi);
             System.Console.WriteLine(_strings.SelectWordSourceLocal);
-            System.Console.WriteLine(_strings.SelectWordSourceCustom);
+            System.Console.WriteLine(_strings.SelectWordSourceCustomSwedish); // ÄNDRAD
+            System.Console.WriteLine(_strings.SelectWordSourceCustomEnglish); // NY
             System.Console.WriteLine(_strings.CommonPressEscapeToCancel);
             System.Console.Write(_strings.SelectWordSourcePrompt);
 
@@ -516,11 +575,20 @@ namespace Hangman.Console
                         return (new WordProvider(difficulty.Value), difficulty.Value);
 
                     case ConsoleKey.D3:
-                    case ConsoleKey.NumPad3:
-                        System.Console.WriteLine(_strings.FeedbackWordSourceCustom);
-                        difficulty = SelectDifficulty(_strings.FeedbackWordSourceCustom);
+                    case ConsoleKey.NumPad3: // Anpassad Svenska
+                        System.Console.WriteLine(_strings.FeedbackWordSourceCustomSwedish);
+                        difficulty = SelectDifficulty(_strings.FeedbackWordSourceCustomSwedish);
                         if (difficulty == null) return (null, null);
-                        return (new CustomWordProvider(difficulty.Value), difficulty.Value);
+                        // NYTT: Skickar med WordLanguage.Swedish
+                        return (new CustomWordProvider(difficulty.Value, WordLanguage.Swedish), difficulty.Value);
+
+                    case ConsoleKey.D4:
+                    case ConsoleKey.NumPad4: // NY: Anpassad Engelska
+                        System.Console.WriteLine(_strings.FeedbackWordSourceCustomEnglish);
+                        difficulty = SelectDifficulty(_strings.FeedbackWordSourceCustomEnglish);
+                        if (difficulty == null) return (null, null);
+                        // NYTT: Skickar med WordLanguage.English
+                        return (new CustomWordProvider(difficulty.Value, WordLanguage.English), difficulty.Value);
 
                     case ConsoleKey.Escape:
                         System.Console.WriteLine(_strings.CommonFeedbackCancelling);

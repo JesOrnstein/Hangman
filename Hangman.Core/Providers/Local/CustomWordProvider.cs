@@ -19,35 +19,44 @@ namespace Hangman.Core.Providers.Local
 
         private readonly Random _rng = new Random();
         private readonly WordDifficulty _difficulty;
+        private readonly WordLanguage _language; // NYTT
 
-        public CustomWordProvider(WordDifficulty difficulty)
+        public CustomWordProvider(WordDifficulty difficulty, WordLanguage language)
         {
             _difficulty = difficulty;
+            _language = language; // NYTT
         }
 
-        public string DifficultyName => $"Anpassad Ordlista ({_difficulty})";
+        // NYTT: Visar nu även språk
+        public string DifficultyName => $"Anpassad Ordlista ({_language} - {_difficulty})";
 
         /// <summary>
         /// Sparar ett nytt ord till den anpassade ordlistan i databasen.
         /// </summary>
-        public async Task AddWordAsync(string word, WordDifficulty difficulty)
+        public async Task AddWordAsync(string word, WordDifficulty difficulty, WordLanguage language)
         {
             if (string.IsNullOrWhiteSpace(word))
                 throw new ArgumentException("Ordet får inte vara tomt.", nameof(word));
 
             // Skapa posten. Konstruktorn gör ordet till VERSALER.
-            var newEntry = new CustomWordEntry(word, difficulty)
+            var newEntry = new CustomWordEntry(word, difficulty, language)
             {
                 Word = word,
-                Difficulty = difficulty
+                Difficulty = difficulty,
+                Language = language // NYTT
             };
 
             using (var context = new HangmanDbContext())
             {
                 // Vi kollar här för att ge ett bättre felmeddelande än DbUpdateException
-                if (await context.CustomWords.AnyAsync(e => e.Word == newEntry.Word && e.Difficulty == newEntry.Difficulty))
+                // NYTT: Kollar även 'Language'
+                if (await context.CustomWords.AnyAsync(e =>
+                    e.Word == newEntry.Word &&
+                    e.Difficulty == newEntry.Difficulty &&
+                    e.Language == newEntry.Language))
                 {
-                    throw new InvalidOperationException($"Ordet '{word}' finns redan i listan för svårighetsgrad {difficulty}.");
+                    // NYTT: Uppdaterat felmeddelande
+                    throw new InvalidOperationException($"Ordet '{word}' finns redan i listan för svårighetsgrad {difficulty} ({language}).");
                 }
 
                 context.CustomWords.Add(newEntry);
@@ -62,17 +71,18 @@ namespace Hangman.Core.Providers.Local
             // Hämta från databasen istället för JSON-fil
             using (var context = new HangmanDbContext())
             {
-                // Filtrera på vald svårighetsgrad i databasfrågan
+                // Filtrera på vald svårighetsgrad OCH SPRÅK i databasfrågan
                 availableWords = await context.CustomWords
                     .AsNoTracking() // Vi behöver inte spåra ändringar här
-                    .Where(w => w.Difficulty == _difficulty)
+                    .Where(w => w.Difficulty == _difficulty && w.Language == _language) // MODIFIERAD
                     .Select(w => w.Word)
                     .ToListAsync(ct);
             }
 
             if (!availableWords.Any())
             {
-                throw new InvalidOperationException($"Hittade inga anpassade ord i listan för svårighetsgrad {_difficulty}. Lägg till ord via menyn Inställningar/Verktyg.");
+                // NYTT: Uppdaterat felmeddelande
+                throw new InvalidOperationException($"Hittade inga anpassade ord i listan för svårighetsgrad {_difficulty} ({_language}). Lägg till ord via menyn.");
             }
 
             int index = _rng.Next(availableWords.Count);
