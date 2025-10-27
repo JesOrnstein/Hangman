@@ -54,6 +54,13 @@ namespace Hangman.WPF.ViewModels
             CurrentViewModel = new HelpViewModel(this);
         }
 
+        // --- NY METOD FÖR ATT HANTERA SPELLÄGESVAL ---
+        public void NavigateToGameSettings(GameMode mode)
+        {
+            CurrentViewModel = new GameSettingsViewModel(this, mode);
+        }
+        // ---
+
         // --- NY METOD FÖR STEG 1 ---
         public void NavigateToTournament(GameSettings settings)
         {

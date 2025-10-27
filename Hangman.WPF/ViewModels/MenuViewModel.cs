@@ -8,42 +8,25 @@ namespace Hangman.WPF.ViewModels
     {
         private readonly MainViewModel _mainViewModel;
 
-        public GameSettings CurrentSettings { get; set; }
-
-        // Listor för ComboBoxes
-        public IEnumerable<WordDifficulty> Difficulties => System.Enum.GetValues<WordDifficulty>();
-        // ÄNDRAD: Denna property är nu en Dictionary som mappar enum-värdet till en sträng
-        public Dictionary<WordSource, string> WordSources { get; } = new()
-        {
-            // Vi hämtar inspiration från SwedishUiStrings.cs
-            { WordSource.Api, "Engelska (API)" },
-            { WordSource.Local, "Svenska (Lokal)" },
-            { WordSource.CustomSwedish, "Anpassad Ordlista (Svenska)" },
-            { WordSource.CustomEnglish, "Anpassad Ordlista (Engelska)" }
-        };
-
         public ICommand StartSinglePlayerCommand { get; }
         public ICommand NavigateToHighscoresCommand { get; }
         public ICommand NavigateToAddWordCommand { get; }
-
-        // --- NYA KOMMANDON ---
         public ICommand StartTournamentCommand { get; }
         public ICommand NavigateToHelpCommand { get; }
-        // ---
 
         public MenuViewModel(MainViewModel mainViewModel)
         {
             _mainViewModel = mainViewModel;
-            CurrentSettings = new GameSettings();
 
-            StartSinglePlayerCommand = new RelayCommand(_ => _mainViewModel.NavigateToGame(CurrentSettings));
+            // --- KOMMANDON ÄR UPPDATERADE ---
+            // Använder den nya navigeringsmetoden
+            StartSinglePlayerCommand = new RelayCommand(_ => _mainViewModel.NavigateToGameSettings(GameMode.SinglePlayer));
+            StartTournamentCommand = new RelayCommand(_ => _mainViewModel.NavigateToGameSettings(GameMode.Tournament));
+            // ---
+
             NavigateToHighscoresCommand = new RelayCommand(_ => _mainViewModel.NavigateToHighscores());
             NavigateToAddWordCommand = new RelayCommand(_ => _mainViewModel.NavigateToAddWord());
-
-            // --- INITIERA NYA KOMMANDON ---
-            StartTournamentCommand = new RelayCommand(_ => _mainViewModel.NavigateToTournament(CurrentSettings));
             NavigateToHelpCommand = new RelayCommand(_ => _mainViewModel.NavigateToHelp());
-            // ---
         }
     }
 }

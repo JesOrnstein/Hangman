@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="Hangman.WPF.Views.GameSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Hangman.WPF.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
+
+        <TextBlock Text="Spelinställningar" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+        <TextBlock Text="Spelare 1 (Namn):" Margin="0,10,0,0"/>
+        <TextBox Text="{Binding CurrentSettings.PlayerName}" Margin="0,5" Padding="5"/>
+
+        <StackPanel Visibility="{Binding IsTournamentMode, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="Spelare 2 (Namn):" Margin="0,5,0,0"/>
+            <TextBox Text="{Binding CurrentSettings.PlayerName2}" Margin="0,5" Padding="5"/>
+        </StackPanel>
+
+        <TextBlock Text="Svårighetsgrad:" Margin="0,10,0,0"/>
+        <ComboBox ItemsSource="{Binding Difficulties}" 
+                  SelectedItem="{Binding CurrentSettings.Difficulty}" Margin="0,5" Padding="5"/>
+
+        <TextBlock Text="Ordlista:" Margin="0,10,0,0"/>
+        <ComboBox ItemsSource="{Binding WordSources}" 
+                  SelectedValue="{Binding CurrentSettings.Source}"
+                  DisplayMemberPath="Value"
+                  SelectedValuePath="Key"
+                  Margin="0,5" Padding="5"/>
+
+        <Button Content="Starta Spel" 
+                Command="{Binding StartGameCommand}" 
+                Margin="0,20,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
+
+        <Button Content="Tillbaka till Menyn" 
+                Command="{Binding BackToMenuCommand}" 
+                Margin="0,10" Padding="5" Background="LightGray"/>
+
+    </StackPanel>
+</UserControl>

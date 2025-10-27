@@ -27,7 +27,6 @@
     </UserControl.Resources>
 
     <Grid>
-        <!-- Spel pågår -->
         <Grid Margin="20"
               Visibility="{Binding IsGameInProgress, Converter={StaticResource BoolToVis}}">
             <Grid.RowDefinitions>
@@ -35,9 +34,11 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+
 
             <TextBlock Grid.Row="0"
                        Text="{Binding SecondsLeft, StringFormat='Tid kvar: {0}s'}"
@@ -53,6 +54,14 @@
                    Stretch="Uniform"/>
 
             <TextBlock Grid.Row="2"
+                       Text="{Binding CreakAnimationText}"
+                       HorizontalAlignment="Center"
+                       FontSize="14"
+                       Foreground="DarkGray"
+                       FontStyle="Italic"
+                       FontFamily="Courier New"/>
+
+            <TextBlock Grid.Row="3"
                        Text="{Binding MaskedWord}"
                        FontSize="48"
                        FontFamily="Courier New"
@@ -60,14 +69,14 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"/>
 
-            <TextBlock Grid.Row="3"
+            <TextBlock Grid.Row="4"
                        Text="{Binding UsedLetters}"
                        FontSize="16"
                        Foreground="Gray"
                        HorizontalAlignment="Center"
                        Margin="0,10,0,20"/>
 
-            <ItemsControl Grid.Row="4"
+            <ItemsControl Grid.Row="5"
               ItemsSource="{Binding KeyboardLetters}"
               VerticalAlignment="Center">
                 <ItemsControl.ItemsPanel>
@@ -82,8 +91,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-
-            <Button Grid.Row="5"
+            <Button Grid.Row="6"
                     Content="Ge upp / Till menyn"
                     Command="{Binding BackToMenuCommand}"
                     HorizontalAlignment="Center"
@@ -92,7 +100,7 @@
                     Padding="10"/>
         </Grid>
 
-        <!-- Spel avslutat -->
+
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel.Style>
                 <Style TargetType="StackPanel">

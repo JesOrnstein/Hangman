@@ -13,6 +13,10 @@
         <DataTemplate DataType="{x:Type viewmodels:MenuViewModel}">
             <views:MenuView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewmodels:GameSettingsViewModel}">
+            <views:GameSettingsView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewmodels:GameViewModel}">
             <views:GameView />
         </DataTemplate>

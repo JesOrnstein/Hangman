@@ -20,6 +20,24 @@ namespace Hangman.WPF.ViewModels
         private readonly TwoPlayerGame _tournament;
         private readonly DispatcherTimer _timer;
 
+        // --- Animationsramar (från ConsoleRenderer) ---
+        private static readonly string[] _animFrames =
+        {
+            "*creak...* ", // Frame 0
+            " *creak...* ", // Frame 1
+            "  *creak...* ", // Frame 2
+            "   *creak...* ", // Frame 3
+            "    *creak...* ", // Frame 4
+            "     *creak...*", // Frame 5
+            "    *creak...* ", // Frame 6
+            "   *creak...* ", // Frame 7
+            "  *creak...* ", // Frame 8
+            " *creak...* ", // Frame 9
+            "*creak...* ", // Frame 10
+            "               "  // Frame 11 (paus)
+        };
+        private const int AnimFrameCount = 12;
+
         // --- Bindningsbara Egenskaper (Turnering) ---
         public Player Player1 => _tournament.Player1;
         public Player Player2 => _tournament.Player2;
@@ -42,6 +60,10 @@ namespace Hangman.WPF.ViewModels
 
         private int _secondsLeft = 60;
         public int SecondsLeft { get => _secondsLeft; set { _secondsLeft = value; OnPropertyChanged(); } }
+
+        // NY PROPERTY FÖR ANIMATION
+        private string _creakAnimationText = "";
+        public string CreakAnimationText { get => _creakAnimationText; set { _creakAnimationText = value; OnPropertyChanged(); } }
 
         private bool _isRoundInProgress = false;
         public bool IsRoundInProgress { get => _isRoundInProgress; set { _isRoundInProgress = value; OnPropertyChanged(); } }
@@ -92,6 +114,7 @@ namespace Hangman.WPF.ViewModels
             MaskedWord = "Hämtar ord...";
             UsedLetters = "";
             GallowsImageSource = "/Images/stage_0.png";
+            CreakAnimationText = string.Empty; // Rensa
             CurrentGuesserName = _tournament.CurrentPlayerName;
 
             // Uppdatera liv (viktigt för UI-bindning)
@@ -131,6 +154,7 @@ namespace Hangman.WPF.ViewModels
             IsTournamentInProgress = false;
             IsRoundInProgress = false;
             _timer.Stop();
+            CreakAnimationText = string.Empty; // Rensa
 
             if (_tournament.TournamentStatus == GameStatus.Draw)
             {
@@ -157,9 +181,16 @@ namespace Hangman.WPF.ViewModels
         private void Timer_Tick(object? sender, EventArgs e)
         {
             SecondsLeft--;
+
+            // NYTT: Uppdatera animationen
+            int frame = SecondsLeft % AnimFrameCount;
+            CreakAnimationText = _animFrames[frame];
+            // ---
+
             if (SecondsLeft <= 0)
             {
                 _timer.Stop();
+                CreakAnimationText = string.Empty; // Rensa
                 TournamentStatusMessage = "Tiden är ute!";
                 _game.ForceLose();
             }
@@ -193,6 +224,7 @@ namespace Hangman.WPF.ViewModels
         {
             _timer.Stop();
             IsRoundInProgress = false;
+            CreakAnimationText = string.Empty; // Rensa
 
             // Hantera resultatet i turneringen
             _tournament.HandleRoundEnd(status);

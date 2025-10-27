@@ -2,6 +2,13 @@
 
 namespace Hangman.WPF.ViewModels
 {
+    // NY ENUM för att spåra spelläge
+    public enum GameMode
+    {
+        SinglePlayer,
+        Tournament
+    }
+
     // En simple dataklass för att skicka val från menyn
     public class GameSettings
     {
