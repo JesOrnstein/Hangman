@@ -184,7 +184,7 @@ dotnet test
 - **Hangman.WPF – GameView**  
   ![WPF GameView](Hangman.WPF/Images/WPFScreenShow.png)
 
-- **Hangman.Console – Spelrunda**  
+- **Hangman.Console – ConsoleMenu**  
   ![Console Round](Hangman.WPF/Images/ConsoleScreenShot.png)
 
 ---
