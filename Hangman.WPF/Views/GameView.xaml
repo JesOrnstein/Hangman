@@ -1,19 +1,17 @@
 ﻿<UserControl x:Class="Hangman.WPF.Views.GameView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Hangman.WPF.Views"
-             
              xmlns:viewmodels="clr-namespace:Hangman.WPF.ViewModels"
-             
              d:DataContext="{d:DesignInstance Type=viewmodels:GameViewModel}"
-             mc:Ignorable="d" 
-             d:DesignHeight="550" d:DesignWidth="800">
+             mc:Ignorable="d"
+             d:DesignHeight="550"
+             d:DesignWidth="800">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <BooleanToVisibilityConverter x:Key="InvertedBoolToVis" />
 
         <Style TargetType="Button" x:Key="KeyboardButton">
             <Setter Property="Width" Value="40"/>
@@ -21,36 +19,60 @@
             <Setter Property="Margin" Value="2"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Command" Value="{Binding DataContext.GuessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+            <Setter Property="Command"
+                    Value="{Binding DataContext.GuessCommand,
+                                    RelativeSource={RelativeSource AncestorType=UserControl}}"/>
             <Setter Property="CommandParameter" Value="{Binding}"/>
         </Style>
     </UserControl.Resources>
 
     <Grid>
-        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Margin="20"
-                    Visibility="{Binding IsGameInProgress, Converter={StaticResource BoolToVis}}">
+        <!-- Spel pågår -->
+        <Grid Margin="20"
+              Visibility="{Binding IsGameInProgress, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            <TextBlock Text="{Binding SecondsLeft, StringFormat='Tid kvar: {0}s'}" 
-                       FontSize="20" FontWeight="Bold" Foreground="Crimson" HorizontalAlignment="Right"/>
-
-            <Image Source="{Binding GallowsImageSource}" Height="200" Margin="0,10"/>
-
-            <TextBlock Text="{Binding MaskedWord}" 
-                       FontSize="48" 
-                       FontFamily="Courier New" 
+            <TextBlock Grid.Row="0"
+                       Text="{Binding SecondsLeft, StringFormat='Tid kvar: {0}s'}"
+                       FontSize="20"
                        FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
+                       Foreground="Crimson"
+                       HorizontalAlignment="Right"/>
 
-            <TextBlock Text="{Binding UsedLetters}"
-                       FontSize="16" 
+            <Image Grid.Row="1"
+                   Source="{Binding GallowsImageSource}"
+                   Height="200"
+                   Margin="0,10"
+                   Stretch="Uniform"/>
+
+            <TextBlock Grid.Row="2"
+                       Text="{Binding MaskedWord}"
+                       FontSize="48"
+                       FontFamily="Courier New"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <TextBlock Grid.Row="3"
+                       Text="{Binding UsedLetters}"
+                       FontSize="16"
                        Foreground="Gray"
                        HorizontalAlignment="Center"
                        Margin="0,10,0,20"/>
 
-            <ItemsControl ItemsSource="{Binding KeyboardLetters}">
+            <ItemsControl Grid.Row="4"
+              ItemsSource="{Binding KeyboardLetters}"
+              VerticalAlignment="Center">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel HorizontalAlignment="Center" Width="500"/>
+                        <UniformGrid Rows="3" Columns="10" HorizontalAlignment="Center"></UniformGrid>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -60,19 +82,45 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Button Content="Ge upp / Till menyn" Command="{Binding BackToMenuCommand}" HorizontalAlignment="Center" Margin="0,20" Padding="10"/>
 
+            <Button Grid.Row="5"
+                    Content="Ge upp / Till menyn"
+                    Command="{Binding BackToMenuCommand}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="0,20"
+                    Padding="10"/>
+        </Grid>
+
+        <!-- Spel avslutat -->
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsGameInProgress}" Value="False">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+
+            <TextBlock Text="{Binding GameEndMessage}"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"/>
+            <Button Content="Spela Igen"
+                    Command="{Binding PlayAgainCommand}"
+                    Margin="0,20"
+                    Padding="10"
+                    FontSize="16"/>
+            <Button Content="Avsluta (Spara &amp; Gå till Menyn)"
+                    Command="{Binding BackToMenuFinalCommand}"
+                    Margin="0,10"
+                    Padding="10"
+                    FontSize="16"/>
         </StackPanel>
-
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Visibility="{Binding IsGameInProgress, Converter={StaticResource InvertedBoolToVis}}">
-
-            <TextBlock Text="{Binding GameEndMessage}" FontSize="22" FontWeight="Bold" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
-
-            <Button Content="Spela Igen" Command="{Binding PlayAgainCommand}" Margin="0,20" Padding="10" FontSize="16"/>
-            <Button Content="Avsluta (Spara &amp; Gå till Menyn)" Command="{Binding BackToMenuFinalCommand}" Margin="0,10" Padding="10" FontSize="16"/>
-
-        </StackPanel>
-
     </Grid>
 </UserControl>

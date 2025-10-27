@@ -12,7 +12,15 @@ namespace Hangman.WPF.ViewModels
 
         // Listor för ComboBoxes
         public IEnumerable<WordDifficulty> Difficulties => System.Enum.GetValues<WordDifficulty>();
-        public IEnumerable<WordSource> WordSources => System.Enum.GetValues<WordSource>();
+        // ÄNDRAD: Denna property är nu en Dictionary som mappar enum-värdet till en sträng
+        public Dictionary<WordSource, string> WordSources { get; } = new()
+{
+        // Vi hämtar inspiration från SwedishUiStrings.cs
+        { WordSource.Api, "Engelska (API)" },
+        { WordSource.Local, "Svenska (Lokal)" },
+        { WordSource.CustomSwedish, "Anpassad Ordlista (Svenska)" },
+        { WordSource.CustomEnglish, "Anpassad Ordlista (Engelska)" }
+};
 
         public ICommand StartSinglePlayerCommand { get; }
         public ICommand NavigateToHighscoresCommand { get; }
