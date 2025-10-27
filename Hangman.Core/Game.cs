@@ -1,6 +1,7 @@
 ﻿using Hangman.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 /*
   ───────────────────────────────────────────────────────────────
@@ -151,6 +152,19 @@ namespace Hangman.Core
             var needed = new HashSet<char>(_secret);
             needed.RemoveWhere(ch => !char.IsLetter(ch)); // ignorera t.ex. mellanslag eller bindestreck
             return needed.IsSubsetOf(_used);
+        }
+
+        /*
+        Tvingar spelet till förlust-läge.
+        Används om spelaren avbryter en runda.
+        */
+        public void ForceLose()
+        {
+            if (Status == GameStatus.InProgress)
+            {
+                Status = GameStatus.Lost;
+                GameEnded?.Invoke(this, Status);
+            }
         }
     }
 }

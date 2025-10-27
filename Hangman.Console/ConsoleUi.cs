@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-
+using System.Text; // <-- NYTT: Behövs för GetInputString
 
 namespace Hangman.IO
 {
@@ -102,26 +102,51 @@ namespace Hangman.IO
         /// </summary>
         public async Task RunAsync()
         {
-            Console.WriteLine("Välkommen till Hänga Gubbe!");
+            // --- NYTT VÄLKOMST-BLOCK ---
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
 
+            // 1. AVANCERAD "HANGMAN"-titel
+            Console.WriteLine(@"
+     _   _    _    _   _  ____ __  __    _    _   _
+    | | | |  / \  | \ | |/ ___|  \/  |  / \  | \ | |
+    | |_| | / _ \ |  \| | |  _| |\/| | / _ \ |  \| |
+    |  _  |/ ___ \| |\  | |_| | |  | |/ ___ \| |\  |
+    |_| |_/_/   \_\_| \_|\____|_|  |_/_/   \_\_| \_|
+");
+            // 2. VÄLKOMST-TEXT
+            Console.ResetColor();
+            Console.WriteLine("\n\n          Välkommen till HÄNGA GUBBE!");
+            Console.WriteLine("     Tryck valfri tangent för att starta...");
+
+            // 3. VÄNTA PÅ INPUT
+            Console.ReadKey(true);
+            // --- SLUT PÅ VÄLKOMST-BLOCK ---
+
+
+            // Huvudmenyn-loopen startar här (oförändrad)
             while (true)
             {
-                var choice = ShowMainMenu();
+                var choice = ShowMainMenu(); // Visar den nya menyn
                 switch (choice)
                 {
                     case '1':
-                        await PlaySinglePlayerHighscoreAsync(); // NYTT HIGHSCRE-FLÖDE
+                        await PlaySinglePlayerHighscoreAsync();
                         break;
                     case '2':
                         await PlayTournamentAsync();
                         break;
                     case '3':
-                        await ShowHighscoresAsync(); // NYTT
+                        await ShowHighscoresAsync();
                         break;
+                    // NY ORDNING FÖR ATT MATCHA BILDEN
                     case '4':
-                        await ShowSettingsMenu(); // NYTT
+                        await AddCustomWordAsync(); // Flyttad från undermenyn
                         break;
                     case '5':
+                        ShowHelpScreen(); // Flyttad från undermenyn
+                        break;
+                    case '6': // Nytt val för att avsluta
                         Console.Clear();
                         Console.WriteLine("Tack för att du spelade!");
                         return;
@@ -129,21 +154,54 @@ namespace Hangman.IO
             }
         }
 
+        // UPPDATERAD ShowMainMenu
         private char ShowMainMenu()
         {
             Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+
+            // NYTT: Använd "HANGMAN"-titeln här istället för galgen
+            Console.WriteLine(@"
+     _   _    _    _   _  ____ __  __    _    _   _
+    | | | |  / \  | \ | |/ ___|  \/  |  / \  | \ | |
+    | |_| | / _ \ |  \| | |  _| |\/| | / _ \ |  \| |
+    |  _  |/ ___ \| |\  | |_| | |  | |/ ___ \| |\  |
+    |_| |_/_/   \_\_| \_|\____|_|  |_/_/   \_\_| \_|
+            ");
+
+            // 2. Gubben/Galgen (som i bilden)
+            // Vi använder steg 6 (med huvudet) från din befintliga array.
+            Console.WriteLine(@"
+        +-------+
+        |       |
+        |       e
+        |      /|\
+        |      / \
+        |
+    ------------
+   /            \
+  /              \
+ =================
+");
+            Console.ResetColor();
+            Console.WriteLine();
+
+            // De nya menyvalen
             Console.WriteLine("--- HUVUDMENY ---");
-            Console.WriteLine("1. Spela (Enspelare - Highscoreläge)");
+            Console.WriteLine("1. Spela (Enspelare - Highscore)");
             Console.WriteLine("2. Spela (Tvåspelare, turnering)");
-            Console.WriteLine("3. Highscores");
-            Console.WriteLine("4. Inställningar/Verktyg");
-            Console.WriteLine("5. Avsluta");
-            Console.Write("\nVälj (1-5): ");
+            Console.WriteLine("3. Visa Highscores");
+            Console.WriteLine("4. Lägg till nytt ord");
+            Console.WriteLine("5. Hjälp / Hur man spelar");
+            Console.WriteLine("6. Avsluta");
+
+            Console.Write("\nDitt val (1-6): ");
 
             while (true)
             {
                 var key = Console.ReadKey(intercept: true);
-                if (key.KeyChar >= '1' && key.KeyChar <= '5')
+                // Ändrad för att acceptera 1-6
+                if (key.KeyChar >= '1' && key.KeyChar <= '6')
                 {
                     Console.WriteLine(key.KeyChar);
                     return key.KeyChar;
@@ -151,16 +209,17 @@ namespace Hangman.IO
             }
         }
 
-        // --- NY Huvudloop för enspelare med Highscore-logik ---
+        // --- Huvudloop för enspelare med Highscore-logik ---
         private async Task PlaySinglePlayerHighscoreAsync()
         {
             // 1. Välj ordkälla och svårighetsgrad
             var (provider, currentDifficulty) = SelectWordSource();
-
-            if (provider == null) return;
+            if (provider == null) return; // Backa till huvudmenyn
 
             // Hämta spelarnamn
-            string playerName = GetPlayerName("Ange ditt namn för highscore: ");
+            string? playerName = GetPlayerName("Ange ditt namn för highscore: ");
+            if (playerName == null) return; // Backa till huvudmenyn
+
             int consecutiveWins = 0;
             GameStatus roundResult;
 
@@ -198,9 +257,10 @@ namespace Hangman.IO
                     Console.ResetColor();
 
                     // Fråga om spelaren vill fortsätta
-                    Console.Write("\nVill du fortsätta spela och försöka förbättra ditt highscore (J/N)? ");
+                    Console.Write("\nVill du fortsätta spela (J/N)? (Escape för att avsluta) ");
                     var key = Console.ReadKey(intercept: true);
-                    if (char.ToUpperInvariant(key.KeyChar) != 'J')
+
+                    if (key.Key == ConsoleKey.Escape || char.ToUpperInvariant(key.KeyChar) != 'J')
                     {
                         roundResult = GameStatus.Lost;
                         Console.WriteLine("\nAvslutar spelloop...");
@@ -212,44 +272,44 @@ namespace Hangman.IO
                 }
                 else // roundResult == GameStatus.Lost
                 {
-                    Console.WriteLine("\nTryck valfri tangent för att spara highscore...");
-                    Console.ReadKey(true);
+                    if (consecutiveWins > 0) // Endast visa om de vann minst en
+                    {
+                        Console.WriteLine("\nTryck valfri tangent för att spara highscore...");
+                        Console.ReadKey(true);
+                    }
                 }
 
 
             } while (roundResult == GameStatus.Won);
 
             // 2. Spara Highscore
-            if (consecutiveWins > 0)
+            // FIX FÖR CS8629
+            if (consecutiveWins > 0 && currentDifficulty.HasValue)
             {
-                // Fix for CS9035: ensure required members are set.
-                // Use an object initializer (combined with ctor for safety) to set all required properties.
-                var newScore = new HighscoreEntry(playerName, consecutiveWins, currentDifficulty)
+                var newScore = new HighscoreEntry(playerName, consecutiveWins, currentDifficulty.Value)
                 {
                     PlayerName = playerName,
                     ConsecutiveWins = consecutiveWins,
-                    Difficulty = currentDifficulty
+                    Difficulty = currentDifficulty.Value
                 };
                 await _statisticsService.SaveHighscoreAsync(newScore);
 
-                Console.WriteLine($"\nHighscore ({consecutiveWins} vinster i rad) sparat för {currentDifficulty}!");
+                Console.WriteLine($"\nHighscore ({consecutiveWins} vinster i rad) sparat för {currentDifficulty.Value}!");
             }
 
             Console.WriteLine("\nÅtergår till huvudmenyn...");
             Console.ReadKey(true);
         }
 
-        // --- NY METOD: Visa Highscores ---
+        // --- Visa Highscores (Top 10) ---
         private async Task ShowHighscoresAsync()
         {
             Console.Clear();
             Console.WriteLine("--- HIGHSCORES ---");
-            // ÄNDRAD TEXT: 5 -> 10
             Console.WriteLine("Hämtar globala topp 10-resultat...");
 
             try
             {
-                // ÄNDRAD KOD: 5 -> 10
                 var topScores = await _statisticsService.GetGlobalTopScoresAsync(10);
 
                 if (!topScores.Any())
@@ -281,62 +341,38 @@ namespace Hangman.IO
             Console.ReadKey(true);
         }
 
-        // --- NY METOD: Inställningar/Verktyg ---
-        private async Task ShowSettingsMenu()
-        {
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine("--- INSTÄLLNINGAR/VERKTYG ---");
-                Console.WriteLine("1. Lägg till nytt ord till anpassad lista");
-                Console.WriteLine("2. Hjälp / Hur man spelar");
-                Console.WriteLine("3. Tillbaka till Huvudmenyn");
-                Console.Write("\nVälj (1-3): ");
-
-                var key = Console.ReadKey(intercept: true);
-                Console.WriteLine(key.KeyChar);
-
-                switch (key.KeyChar)
-                {
-                    case '1':
-                        await AddCustomWordAsync();
-                        break;
-                    case '2':
-                        ShowHelpScreen();
-                        break;
-                    case '3':
-                        return; // Återgå till RunAsync-loopen
-                }
-            }
-        }
-
-        // --- NY METOD: Lägg till anpassat ord ---
+        // --- Lägg till anpassat ord ---
         private async Task AddCustomWordAsync()
         {
             Console.Clear();
             Console.WriteLine("--- LÄGG TILL NYTT ORD ---");
+            Console.WriteLine("(Tryck Escape när som helst för att avbryta)");
 
             // 1. Få ordet
             string? word = string.Empty;
             while (string.IsNullOrWhiteSpace(word) || !word.All(char.IsLetter))
             {
-                Console.Write("Ange ordet du vill lägga till (endast bokstäver, A-Ö): ");
-                word = Console.ReadLine()?.Trim().ToUpperInvariant();
+                word = GetInputString("Ange ordet (A-Ö): ");
+
+                if (word == null) return; // Användaren tryckte Escape
 
                 if (string.IsNullOrWhiteSpace(word) || !word.All(char.IsLetter))
                 {
-                    Console.WriteLine("Ogiltigt ord. Ange endast bokstäver.");
+                    Console.WriteLine("\nOgiltigt ord. Ange endast bokstäver.");
                 }
             }
 
-            // 2. Välj svårighetsgrad (återanvänd befintlig metod)
-            WordDifficulty difficulty = SelectDifficulty("Anpassat Ord");
+            word = word.ToUpperInvariant(); // Se till att det är versaler
+
+            // 2. Välj svårighetsgrad
+            WordDifficulty? difficulty = SelectDifficulty("Anpassat Ord");
+            if (difficulty == null) return; // Användaren tryckte Escape
 
             // 3. Spara ordet
             try
             {
-                var saver = new CustomWordProvider(difficulty);
-                await saver.AddWordAsync(word, difficulty);
+                var saver = new CustomWordProvider(difficulty.Value);
+                await saver.AddWordAsync(word, difficulty.Value);
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"\nOrdet '{word}' har lagts till i den anpassade listan ({difficulty})!");
@@ -351,15 +387,15 @@ namespace Hangman.IO
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\nEtt fel inträffade vid fil-IO: {ex.Message}");
+                Console.WriteLine($"\nEtt databasfel inträffade: {ex.Message}");
                 Console.ResetColor();
             }
 
-            Console.WriteLine("\nTryck valfri tangent för att återgå till Inställningar...");
+            Console.WriteLine("\nTryck valfri tangent för att återgå till huvudmenyn...");
             Console.ReadKey(true);
         }
 
-        // --- NY METOD: Hjälp/How to Play ---
+        // --- Hjälp/How to Play ---
         private void ShowHelpScreen()
         {
             Console.Clear();
@@ -374,7 +410,7 @@ namespace Hangman.IO
             Console.WriteLine("  Lokal: Svenska ord från en inbyggd lista.");
             Console.WriteLine("  Anpassad: Ord som du själv har lagt till.");
 
-            Console.WriteLine("\nTryck valfri tangent för att återgå till Inställningar...");
+            Console.WriteLine("\nTryck valfri tangent för att återgå till huvudmenyn...");
             Console.ReadKey(true);
         }
 
@@ -383,15 +419,17 @@ namespace Hangman.IO
         {
             Console.Clear();
             Console.WriteLine("--- TVÅSPELARTURNERING ---");
+            Console.WriteLine("(Tryck Escape när som helst för att avbryta)");
 
-            // 1. Hämta spelarnamn och ordkälla (som gäller för alla rundor)
-            string p1Name = GetPlayerName("Ange namn för Spelare 1: ");
-            string p2Name = GetPlayerName("Ange namn för Spelare 2: ");
+            // 1. Hämta spelarnamn och ordkälla
+            string? p1Name = GetPlayerName("Ange namn för Spelare 1: ");
+            if (p1Name == null) return; // Backa
 
-            // ANVÄND NY SelectWordSource, ignorera svårighetsgraden
+            string? p2Name = GetPlayerName("Ange namn för Spelare 2: ");
+            if (p2Name == null) return; // Backa
+
             var (provider, _) = SelectWordSource();
-
-            if (provider == null) return;
+            if (provider == null) return; // Backa
 
             // Skapa turneringsmotorn
             var tournament = new Hangman.Core.TwoPlayerGame(p1Name, p2Name, provider);
@@ -427,6 +465,13 @@ namespace Hangman.IO
                 // Kör rundan och få resultatet
                 GameStatus roundResult = PlayRound(currentGuesser.Name, secret, currentGuesser.Lives);
 
+                // Om rundan avbröts (ForceLose), avbryt hela turneringen
+                if (_game?.Status == GameStatus.Lost && _feedbackMessage == "Rundan avbröts av spelaren.")
+                {
+                    Console.WriteLine("Turneringen avbröts.");
+                    break;
+                }
+
                 // Hantera resultat och byt gissare
                 tournament.HandleRoundEnd(roundResult);
 
@@ -439,18 +484,21 @@ namespace Hangman.IO
                 }
             }
 
-            // 4. Visa Vinnaren
-            Hangman.Core.Player winner = tournament.GetWinner()!;
-            Hangman.Core.Player loser = (winner == tournament.Player1) ? tournament.Player2 : tournament.Player1;
+            // 4. Visa Vinnaren (endast om turneringen inte avbröts)
+            if (_feedbackMessage != "Rundan avbröts av spelaren.")
+            {
+                Hangman.Core.Player winner = tournament.GetWinner()!;
+                Hangman.Core.Player loser = (winner == tournament.Player1) ? tournament.Player2 : tournament.Player1;
 
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"\n--- TURNERING AVSLUTAD ---");
-            Console.WriteLine($"GRATTIS, {winner.Name} VANN TURNERINGEN!");
-            Console.ResetColor();
-            Console.WriteLine($"{loser.Name} förlorade alla sina liv. Vunna rundor:");
-            Console.WriteLine($"- {p1Name}: {tournament.Player1.Wins} rundor");
-            Console.WriteLine($"- {p2Name}: {tournament.Player2.Wins} rundor");
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"\n--- TURNERING AVSLUTAD ---");
+                Console.WriteLine($"GRATTIS, {winner.Name} VANN TURNERINGEN!");
+                Console.ResetColor();
+                Console.WriteLine($"{loser.Name} förlorade alla sina liv. Vunna rundor:");
+                Console.WriteLine($"- {p1Name}: {tournament.Player1.Wins} rundor");
+                Console.WriteLine($"- {p2Name}: {tournament.Player2.Wins} rundor");
+            }
 
             Console.WriteLine("\nTryck valfri tangent för att återgå till menyn...");
             Console.ReadKey(true);
@@ -461,38 +509,47 @@ namespace Hangman.IO
         /// Låter användaren välja ordkälla (API, Lokal eller Anpassad).
         /// Returnerar både provider och vald svårighetsgrad (tuple).
         /// </summary>
-        private (IAsyncWordProvider? Provider, WordDifficulty Difficulty) SelectWordSource()
+        private (IAsyncWordProvider? Provider, WordDifficulty? Difficulty) SelectWordSource()
         {
             Console.Clear();
             Console.WriteLine("--- VÄLJ ORDLISTA ---");
             Console.WriteLine("1. Engelska (API - olika längd)");
             Console.WriteLine("2. Svenska (Lokal lista)");
             Console.WriteLine("3. Anpassad Ordlista (Dina sparade ord)");
+            Console.WriteLine("(Tryck Escape för att backa)");
             Console.Write("\nVälj (1-3): ");
 
             while (true)
             {
                 var key = Console.ReadKey(intercept: true);
-                WordDifficulty difficulty;
-                switch (key.KeyChar)
+                WordDifficulty? difficulty; // Nullbar
+
+                switch (key.Key)
                 {
-                    case '1':
+                    case ConsoleKey.D1:
+                    case ConsoleKey.NumPad1:
                         Console.WriteLine("Engelska (API)");
                         difficulty = SelectDifficulty("API");
-                        return (new ApiWordProvider(difficulty), difficulty);
+                        if (difficulty == null) return (null, null); // Backa vidare
+                        return (new ApiWordProvider(difficulty.Value), difficulty.Value);
 
-                    case '2':
+                    case ConsoleKey.D2:
+                    case ConsoleKey.NumPad2:
                         Console.WriteLine("Svenska (Lokal)");
                         difficulty = SelectDifficulty("LOKAL");
-                        return (new WordProvider(difficulty), difficulty);
+                        if (difficulty == null) return (null, null); // Backa vidare
+                        return (new WordProvider(difficulty.Value), difficulty.Value);
 
-                    case '3':
+                    case ConsoleKey.D3:
+                    case ConsoleKey.NumPad3:
                         Console.WriteLine("Anpassad Ordlista");
                         difficulty = SelectDifficulty("ANPASSAD");
-                        return (new CustomWordProvider(difficulty), difficulty);
+                        if (difficulty == null) return (null, null); // Backa vidare
+                        return (new CustomWordProvider(difficulty.Value), difficulty.Value);
 
-                    default:
-                        return (null, WordDifficulty.Medium);
+                    case ConsoleKey.Escape:
+                        Console.WriteLine("Avbryter...");
+                        return (null, null);
                 }
             }
         }
@@ -500,54 +557,69 @@ namespace Hangman.IO
         /// <summary>
         /// Låter användaren välja svårighetsgrad.
         /// </summary>
-        private WordDifficulty SelectDifficulty(string source)
+        private WordDifficulty? SelectDifficulty(string source)
         {
             Console.Clear();
             Console.WriteLine($"--- VÄLJ SVÅRIGHETSGRAD ({source}) ---");
             Console.WriteLine("1. Lätt (3-4 bokstäver)");
             Console.WriteLine("2. Medium (5-7 bokstäver)");
             Console.WriteLine("3. Svår (8-11 bokstäver)");
+            Console.WriteLine("(Tryck Escape för att backa)");
             Console.Write("\nVälj (1-3): ");
 
             while (true)
             {
                 var key = Console.ReadKey(intercept: true);
-                switch (key.KeyChar)
+                switch (key.Key)
                 {
-                    case '1':
+                    case ConsoleKey.D1:
+                    case ConsoleKey.NumPad1:
                         Console.WriteLine("Lätt");
                         return WordDifficulty.Easy;
-                    case '2':
+
+                    case ConsoleKey.D2:
+                    case ConsoleKey.NumPad2:
                         Console.WriteLine("Medium");
                         return WordDifficulty.Medium;
-                    case '3':
+
+                    case ConsoleKey.D3:
+                    case ConsoleKey.NumPad3:
                         Console.WriteLine("Svår");
                         return WordDifficulty.Hard;
+
+                    case ConsoleKey.Escape:
+                        Console.WriteLine("Avbryter...");
+                        return null;
                 }
             }
         }
 
         /// <summary>
-        /// NY GENERISK METOD: Kör en enda runda med ett givet hemligt ord.
+        /// Kör en enda runda med ett givet hemligt ord.
         /// </summary>
         private GameStatus PlayRound(string playerGuessing, string secret, int currentLives)
         {
-            // Hårkodad max mistakes som matchar Game.cs
             int maxMistakes = 6;
 
             _game = new Game(maxMistakes);
             _game.StartNew(secret);
-            _feedbackMessage = string.Empty;
+            _feedbackMessage = string.Empty; // Nollställ feedback för rundan
 
             Console.Clear();
             Console.WriteLine($"--- NY RUNDA STARTAD ---");
 
             while (_game.Status == GameStatus.InProgress)
             {
-                // UPPDATERAT: Skickar med både namn och liv
                 DrawGameScreen(playerGuessing, currentLives);
 
                 char guess = GetGuess();
+                if (guess == '\0') // '\0' är vår signal för "Avbryt"
+                {
+                    _game.ForceLose(); // Använder den nya metoden i Game.cs
+                    _feedbackMessage = "Rundan avbröts av spelaren.";
+                    continue; // Gå till nästa loop-iteration (där Status nu är Lost)
+                }
+
                 bool wasCorrect = _game.Guess(guess);
 
                 if (wasCorrect)
@@ -560,39 +632,36 @@ namespace Hangman.IO
                 }
             }
 
-            ShowEndScreen();
+            ShowEndScreen(); // Visar slutskärmen (vinst/förlust/avbruten)
 
-            // För SinglePlayer stannar loopen här. För Tournament Game återgår den till PlayTournamentAsync.
             if (_game.Status == GameStatus.Lost)
             {
-                Console.WriteLine($"\n{playerGuessing} förlorade rundan.");
+                if (_feedbackMessage != "Rundan avbröts av spelaren.")
+                {
+                    Console.WriteLine($"\n{playerGuessing} förlorade rundan.");
+                }
             }
             else
             {
                 Console.WriteLine($"\n{playerGuessing} vann rundan!");
             }
 
-            // Returnera resultatet av denna runda
             return _game.Status;
         }
 
-        // KORRIGERAD METODSIGNATUR: Lagt till int currentLives
+
         private void DrawGameScreen(string playerGuessing, int currentLives)
         {
             Console.Clear();
             Console.WriteLine("--- HÄNGA GUBBE ---");
 
-            // Visar namnet OCH liv
             Console.ForegroundColor = ConsoleColor.Green;
             if (currentLives > 0)
             {
-                // Visar liv endast i turneringsläge (när currentLives > 0)
-                // Hela namnet behövs här om Hangman.Core.TwoPlayerGame inte har using
-                Console.WriteLine($"Aktiv spelare: {playerGuessing} | Liv: {Hangman.Core.TwoPlayerGame.MaxLives}");
+                Console.WriteLine($"Aktiv spelare: {playerGuessing} | Liv: {currentLives}");
             }
             else
             {
-                // Enspelarläge
                 Console.WriteLine($"Aktiv spelare: {playerGuessing}");
             }
             Console.ResetColor();
@@ -625,11 +694,17 @@ namespace Hangman.IO
                 }
                 else
                 {
+                    // Gult för "Fel" och "Avbröts"
                     Console.ForegroundColor = ConsoleColor.Yellow;
                 }
                 Console.WriteLine(_feedbackMessage);
                 Console.ResetColor();
-                _feedbackMessage = string.Empty;
+
+                // Nollställ bara om det INTE är ett slutmeddelande
+                if (_feedbackMessage != "Rundan avbröts av spelaren.")
+                {
+                    _feedbackMessage = string.Empty;
+                }
             }
         }
 
@@ -647,21 +722,21 @@ namespace Hangman.IO
         {
             while (true)
             {
-                Console.Write("Gissa på en bokstav: ");
+                Console.Write("Gissa på en bokstav (eller Escape för att ge upp): ");
 
-                string? input = Console.ReadLine();
+                var key = Console.ReadKey(intercept: true);
 
-                if (string.IsNullOrWhiteSpace(input) || input.Length > 1)
+                if (key.Key == ConsoleKey.Escape)
                 {
-                    Console.WriteLine("Ogiltig gissning. Skriv EN bokstav.");
-                    continue;
+                    Console.WriteLine("Avbryter...");
+                    return '\0'; // Null-tecken som signal
                 }
 
-                char letter = input[0];
+                char letter = key.KeyChar;
 
                 if (!char.IsLetter(letter))
                 {
-                    Console.WriteLine("Ogiltig gissning. Endast bokstäver (A-Ö) är tillåtna.");
+                    Console.WriteLine($"\nOgiltig gissning '{letter}'. Endast bokstäver (A-Ö).");
                     continue;
                 }
 
@@ -669,10 +744,11 @@ namespace Hangman.IO
 
                 if (_game!.UsedLetters.Contains(upperGuess))
                 {
-                    Console.WriteLine($"Du har redan gissat på '{upperGuess}'. Försök igen.");
+                    Console.WriteLine($"\nDu har redan gissat på '{upperGuess}'. Försök igen.");
                     continue;
                 }
 
+                Console.WriteLine(upperGuess); // Eka den giltiga gissningen
                 return upperGuess;
             }
         }
@@ -691,7 +767,14 @@ namespace Hangman.IO
             else // GameStatus.Lost
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("\nDU FÖRLORADE...");
+                if (_feedbackMessage == "Rundan avbröts av spelaren.")
+                {
+                    Console.WriteLine("\nDu avbröt rundan.");
+                }
+                else
+                {
+                    Console.WriteLine("\nDU FÖRLORADE...");
+                }
             }
 
             Console.ResetColor();
@@ -699,19 +782,62 @@ namespace Hangman.IO
         }
 
         // Hjälpmetod för att hämta spelarnamn
-        private string GetPlayerName(string prompt)
+        private string? GetPlayerName(string prompt)
         {
-            string? name = string.Empty;
-            while (string.IsNullOrWhiteSpace(name))
+            string? name;
+            while (true)
             {
-                Console.Write(prompt);
-                name = Console.ReadLine()?.Trim();
-                if (string.IsNullOrWhiteSpace(name))
+                name = GetInputString(prompt);
+
+                if (name == null) return null; // Användaren tryckte Escape
+
+                if (!string.IsNullOrWhiteSpace(name))
                 {
-                    Console.WriteLine("Namnet kan inte vara tomt.");
+                    return name.Trim();
+                }
+
+                Console.WriteLine("\nNamnet kan inte vara tomt. Försök igen (eller Escape för att backa).");
+            }
+        }
+
+        // NY HJÄLPMETOD: Ersätter Console.ReadLine() för att fånga Escape
+        /// <summary>
+        /// Läser en textrad från konsolen tangent för tangent.
+        /// Returnerar null om användaren trycker Escape.
+        /// </summary>
+        private string? GetInputString(string prompt)
+        {
+            Console.Write(prompt);
+            var sb = new StringBuilder();
+
+            while (true)
+            {
+                var key = Console.ReadKey(intercept: true);
+
+                if (key.Key == ConsoleKey.Escape)
+                {
+                    Console.WriteLine("\nAvbryter...");
+                    return null; // Signal för att backa
+                }
+
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    return sb.ToString();
+                }
+
+                if (key.Key == ConsoleKey.Backspace && sb.Length > 0)
+                {
+                    sb.Length--;
+                    // Radera tecknet från konsolen
+                    Console.Write("\b \b");
+                }
+                else if (!char.IsControl(key.KeyChar))
+                {
+                    sb.Append(key.KeyChar);
+                    Console.Write(key.KeyChar);
                 }
             }
-            return name;
         }
     }
 }
