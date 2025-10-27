@@ -1,13 +1,4 @@
-﻿using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 using Hangman.WPF.ViewModels;
 
 namespace Hangman.WPF.Views
@@ -17,12 +8,21 @@ namespace Hangman.WPF.Views
         public MainWindow()
         {
             InitializeComponent();
-
-            // (DataContext sätts nu i XAML-filen,
-            //  så vi behöver inte göra det här)
         }
 
-        // Denna metod körs när knappen i XAML klickas
+        // NY METOD: Denna körs när fönstret har laddats (från XAML)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Hämta vår ViewModel (som skapades i XAML)
+            var viewModel = DataContext as GameViewModel;
+            if (viewModel != null)
+            {
+                // Anropa den nya asynkrona laddningsmetoden
+                await viewModel.LoadNewGameAsync();
+            }
+        }
+
+        // Denna metod hade du sedan tidigare
         private void GuessButton_Click(object sender, RoutedEventArgs e)
         {
             // 1. Hämta vår ViewModel

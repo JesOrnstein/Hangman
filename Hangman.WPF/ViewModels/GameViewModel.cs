@@ -1,6 +1,9 @@
-﻿using Hangman.Core; // <--- Tillgång till din spellogik!
+﻿using Hangman.Core;
 using Hangman.Core.Models;
+using Hangman.Core.Providers.Api; // <-- NY: För att hämta ord
 using System.Linq;
+using System.Threading.Tasks;     // <-- NY: För async
+using System.Windows;
 
 namespace Hangman.WPF.ViewModels
 {
@@ -10,7 +13,7 @@ namespace Hangman.WPF.ViewModels
         private readonly Game _game;
 
         // 2. Egenskaper som UI:t (V) kan binda till
-        private string _maskedWord = "";
+        private string _maskedWord = "Laddar ord...";
         public string MaskedWord
         {
             get { return _maskedWord; }
@@ -32,9 +35,7 @@ namespace Hangman.WPF.ViewModels
             }
         }
 
-        // ... (lägg till fler för AttemptsLeft etc.)
-
-        // 3. Konstruktor
+        // 3. Konstruktor (Modifierad)
         public GameViewModel()
         {
             // Skapa en instans av din modell
@@ -45,20 +46,44 @@ namespace Hangman.WPF.ViewModels
             _game.WrongLetterGuessed += OnGameUpdated;
             _game.GameEnded += OnGameEnded;
 
-            // Starta ett spel (hårdkodat ord för test)
-            _game.StartNew("WPFTEST");
-            UpdateUiProperties();
+            // Vi startar inte spelet här längre, det gör LoadNewGameAsync
         }
 
-        // 4. Metod som UI:t kan anropa
+        // 4. NY Metod för att ladda spel
+        public async Task LoadNewGameAsync()
+        {
+            // Välj vilken ordhämtare du vill testa med:
+            var wordProvider = new ApiWordProvider(WordDifficulty.Medium);
+            // eller:
+            // var wordProvider = new Hangman.Core.WordProvider(WordDifficulty.Easy);
+
+            try
+            {
+                // Hämta ordet asynkront
+                string word = await wordProvider.GetWordAsync();
+                _game.StartNew(word);
+            }
+            catch (System.Exception)
+            {
+                // Hantera fel, t.ex. om API:et är nere
+                // (Du kan logga ex.Message här)
+                _game.StartNew("APIERROR");
+            }
+            finally
+            {
+                // Uppdatera alltid UI:t när laddningen är klar
+                UpdateUiProperties();
+            }
+        }
+
+
+        // 5. Metod som UI:t kan anropa
         public void MakeGuess(char letter)
         {
             _game.Guess(letter);
-            // Vi behöver inte kalla OnPropertyChanged här,
-            // för _game.Guess() kommer trigga våra event-handlers!
         }
 
-        // 5. Event-handlers (Modellen pratar med oss)
+        // 6. Event-handlers (Modellen pratar med oss)
         private void OnGameUpdated(object? sender, char e)
         {
             UpdateUiProperties();
@@ -67,14 +92,17 @@ namespace Hangman.WPF.ViewModels
         private void OnGameEnded(object? sender, GameStatus status)
         {
             UpdateUiProperties();
-            // Visa en popup?
+            // Här kan du visa en MessageBox
+            MessageBox.Show(
+                status == GameStatus.Won ? "Grattis, du vann!" : $"Du förlorade! Ordet var: {_game.Secret}",
+                "Spelet är slut");
         }
 
-        // 6. Hjälpmetod för att uppdatera alla UI-fält
+        // 7. Hjälpmetod för att uppdatera alla UI-fält
         private void UpdateUiProperties()
         {
             MaskedWord = _game.GetMaskedWord();
-            UsedLetters = string.Join(", ", _game.UsedLetters.OrderBy(c => c));
+            UsedLetters = $"Gissade: {string.Join(", ", _game.UsedLetters.OrderBy(c => c))}";
         }
     }
 }

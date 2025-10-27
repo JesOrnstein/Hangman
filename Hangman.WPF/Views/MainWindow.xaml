@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:Hangman.WPF.Views"
         xmlns:viewmodels="clr-namespace:Hangman.WPF.ViewModels"
         mc:Ignorable="d"
-        Title="WPF Hangman" Height="300" Width="400">
-
+        Title="WPF Hangman" Height="300" Width="400"
+        Loaded="MainWindow_Loaded">
     <Window.DataContext>
         <viewmodels:GameViewModel/>
     </Window.DataContext>
