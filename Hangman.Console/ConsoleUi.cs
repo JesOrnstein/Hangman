@@ -1,7 +1,7 @@
 ﻿using Hangman.Core;
 using Hangman.Core.Providers.Api;
-
-// using Hangman.Core.Providers.Api; // Behövs inte, ligger i Hangman.Core
+using Hangman.Core.Providers.Interface;
+using Hangman.Core.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -134,8 +134,6 @@ namespace Hangman.IO
             }
         }
 
-        // --- ÄNDRING: NY METOD för att välja ordkälla ---
-        // Den returnerar 'IAsyncWordProvider?' (nullable)
         private IAsyncWordProvider? SelectWordSource()
         {
             Console.Clear();
@@ -152,27 +150,23 @@ namespace Hangman.IO
                     case '1':
                         // Om vi väljer API, visa svårighetsgrad
                         Console.WriteLine("Engelska (API)");
-                        ApiDifficulty difficulty = SelectDifficulty();
-                        return new ApiWordProvider(difficulty); // Returnera en giltig provider
+                        WordDifficulty difficultyApi = SelectDifficulty("API"); 
+                        return new ApiWordProvider(difficultyApi);
 
                     case '2':
-                        // Om vi väljer Lokal, visa meddelande och returnera null
+                        // Lokal lista med svårighetsgrad
                         Console.WriteLine("Svenska (Lokal)");
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("\nDenna funktion är under implementering.");
-                        Console.ResetColor();
-                        Console.WriteLine("Tryck valfri tangent för att återgå till menyn...");
-                        Console.ReadKey();
-                        return null; // Returnera null för att avbryta
+                        WordDifficulty difficultyLocal = SelectDifficulty("LOKAL"); 
+                        return new WordProvider(difficultyLocal); 
                 }
             }
         }
 
-        // Denna metod anropas nu inuti SelectWordSource
-        private ApiDifficulty SelectDifficulty()
+        // SelectDifficulty uppdaterad med WordDifficulty och för att ta emot en sträng
+        private WordDifficulty SelectDifficulty(string source)
         {
             Console.Clear();
-            Console.WriteLine("--- VÄLJ SVÅRIGHETSGRAD (API) ---");
+            Console.WriteLine($"--- VÄLJ SVÅRIGHETSGRAD ({source}) ---");
             Console.WriteLine("1. Lätt (3-4 bokstäver)");
             Console.WriteLine("2. Medium (5-7 bokstäver)");
             Console.WriteLine("3. Svår (8-11 bokstäver)");
@@ -185,18 +179,18 @@ namespace Hangman.IO
                 {
                     case '1':
                         Console.WriteLine("Lätt");
-                        return ApiDifficulty.Easy;
+                        return WordDifficulty.Easy;
                     case '2':
                         Console.WriteLine("Medium");
-                        return ApiDifficulty.Medium;
+                        return WordDifficulty.Medium;
                     case '3':
                         Console.WriteLine("Svår");
-                        return ApiDifficulty.Hard;
+                        return WordDifficulty.Hard;
                 }
             }
         }
 
-        // --- ÄNDRING: PlayNewGameAsync uppdaterad ---
+       
         private async Task PlayNewGameAsync()
         {
             // 1. Välj provider. Denna kan nu returnera null
@@ -212,7 +206,7 @@ namespace Hangman.IO
             int maxMistakes = 6;
 
             // 4. Skapa spelet
-            _game = new Game(maxMistakes);
+            _game = new Game(maxMistakes); //
 
             Console.Clear();
             Console.WriteLine($"Hämtar ord från: {_provider.DifficultyName}...");
@@ -225,7 +219,8 @@ namespace Hangman.IO
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("\nKunde inte starta spelet (API-fel):");
+                // Mer generiskt meddelande för att hantera fel från både API och Lokal
+                Console.WriteLine("\nKunde inte starta spelet (Ordlistefel):");
                 Console.WriteLine(ex.Message);
                 Console.ResetColor();
                 Console.WriteLine("Tryck valfri tangent för att återgå till menyn...");
@@ -258,7 +253,6 @@ namespace Hangman.IO
             Console.ReadKey();
         }
 
-        // --- ÄNDRING: DrawGameScreen uppdaterad ---
         private void DrawGameScreen()
         {
             Console.Clear();

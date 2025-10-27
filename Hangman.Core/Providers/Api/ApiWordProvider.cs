@@ -6,12 +6,12 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Threading;
-
-
+using Hangman.Core.Providers.Interface;
+using Hangman.Core.Models;
 
 /*
   En ordprovider som hämtar ett slumpmässigt ord från ett externt API.
-  Den kan konfigureras med en svårighetsgrad (ApiDifficulty)
+  Den kan konfigureras med en svårighetsgrad (WordDifficulty)
   för att hämta ord av olika längd.
 */
 
@@ -23,19 +23,15 @@ namespace Hangman.Core.Providers.Api
         private const string ApiUrl = "https://random-word-api.herokuapp.com/word";
 
         // Spara svårighetsgraden som valdes när klassen skapades
-        private readonly ApiDifficulty _difficulty;
+        private readonly WordDifficulty _difficulty; 
 
         // Vi behöver en Random-generator för att välja längd inom ett spann
         private readonly Random _rng = new();
 
         // Konstruktorn tar nu emot en svårighetsgrad
-        public ApiWordProvider(ApiDifficulty difficulty)
+        public ApiWordProvider(WordDifficulty difficulty) 
         {
             _difficulty = difficulty;
-        }
-
-        public ApiWordProvider()
-        {
         }
 
         // DifficultyName kan nu reflektera det valda läget
@@ -48,17 +44,17 @@ namespace Hangman.Core.Providers.Api
 
             switch (_difficulty)
             {
-                case ApiDifficulty.Easy:
+                case WordDifficulty.Easy: 
                     minLength = 3; // 1-2 bokstäver är inte så kul i hänga gubbe
                     maxLength = 4;
                     break;
 
-                case ApiDifficulty.Medium:
+                case WordDifficulty.Medium: 
                     minLength = 5;
                     maxLength = 7;
                     break;
 
-                case ApiDifficulty.Hard:
+                case WordDifficulty.Hard:
                     minLength = 8;
                     maxLength = 11; // Sätt en övre gräns
                     break;
