@@ -1,4 +1,5 @@
 ﻿using Hangman.Core;
+using Hangman.Core.Models;
 using Xunit;
 
 /*

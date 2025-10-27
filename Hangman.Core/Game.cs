@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hangman.Core.Models;
+using System;
 using System.Collections.Generic;
 
 /*
