@@ -5,6 +5,7 @@ using Hangman.Core.Models;
 using Hangman.Core.Providers.Api;
 using Hangman.Core.Providers.Interface;
 using Hangman.Core.Providers.Local;
+using System.Threading; // Inkluderad för CancellationTokenSource
 
 namespace Hangman.Console
 {
@@ -87,7 +88,9 @@ namespace Hangman.Console
                     break;
                 }
 
-                roundResult = PlayRound(playerName, secret, 0);
+                // Anropar metoden som returnerar en tuple
+                var (status, _) = await PlayRoundWithFeedbackAsync(playerName, secret, 0);
+                roundResult = status;
 
                 if (roundResult == GameStatus.Won)
                 {
@@ -109,9 +112,6 @@ namespace Hangman.Console
             // Spara highscore om spelaren vann minst en runda
             if (consecutiveWins > 0)
             {
-                // --- HÄR ÄR FIXEN (baserad på din gamla kod) ---
-                // Vi använder en objekt-initialiserare { ... } för att
-                // explicit sätta de 'required' fälten.
                 var newScore = new HighscoreEntry(playerName, consecutiveWins, currentDifficulty.Value)
                 {
                     PlayerName = playerName,
@@ -119,7 +119,6 @@ namespace Hangman.Console
                     Difficulty = currentDifficulty.Value
                 };
                 await _statisticsService.SaveHighscoreAsync(newScore);
-                // --- SLUT PÅ FIX ---
 
                 _renderer.ShowFeedback(_strings.FeedbackHighscoreSaved(consecutiveWins, currentDifficulty.Value), ConsoleColor.Green);
             }
@@ -180,7 +179,9 @@ namespace Hangman.Console
                     return;
                 }
 
-                GameStatus roundResult = PlayRound(currentGuesser.Name, secret, currentGuesser.Lives, out roundFeedback);
+                // Anropar metoden som returnerar en tuple
+                var (roundResult, feedback) = await PlayRoundWithFeedbackAsync(currentGuesser.Name, secret, currentGuesser.Lives);
+                roundFeedback = feedback;
 
                 // Hantera avbruten runda
                 if (roundResult == GameStatus.Lost && roundFeedback == _strings.RoundFeedbackCancelled)
@@ -213,44 +214,108 @@ namespace Hangman.Console
         }
 
         /// <summary>
-        /// Spelar en enskild runda av Hänga Gubbe.
+        /// Spelar en enskild runda av Hänga Gubbe (med timer/animation).
+        /// Returnerar status och feedback-meddelande som en Tuple.
         /// </summary>
-        private GameStatus PlayRound(string playerGuessing, string secret, int currentLives)
-        {
-            string feedback; // dummy out
-            return PlayRound(playerGuessing, secret, currentLives, out feedback);
-        }
-
-        /// <summary>
-        /// Spelar en enskild runda av Hänga Gubbe (överlagrad version).
-        /// </summary>
-        private GameStatus PlayRound(string playerGuessing, string secret, int currentLives, out string feedbackMessage)
+        private async Task<(GameStatus Status, string Feedback)> PlayRoundWithFeedbackAsync(string playerGuessing, string secret, int currentLives)
         {
             var game = new Game(6);
             game.StartNew(secret);
-            feedbackMessage = string.Empty;
+            string feedbackMessage = string.Empty;
 
             _renderer.Clear();
             _renderer.ShowFeedback(_strings.RoundTitleNewRound, ConsoleColor.Cyan);
 
-            while (game.Status == GameStatus.InProgress)
+            // KORRIGERING: Rita skärmen *före* timern startar för att undvika race condition
+            _renderer.DrawGameScreen(game, playerGuessing, currentLives, feedbackMessage);
+            feedbackMessage = string.Empty; // Nollställ feedback *efter* första ritningen
+
+            // 1. Skapa en CancellationTokenSource som avbryts efter 60 sekunder
+            var roundCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            var startTime = DateTime.UtcNow;
+
+            // 2. Starta en parallell task (Task.Run) för att visa nedräkning OCH animation
+            var timerTask = Task.Run(async () =>
             {
-                _renderer.DrawGameScreen(game, playerGuessing, currentLives, feedbackMessage);
-                feedbackMessage = string.Empty; // Nollställ efter ritning
-
-                char guess = _input.GetGuess(game.UsedLetters);
-                if (guess == '\0') // Escape
+                try
                 {
-                    game.ForceLose();
-                    feedbackMessage = _strings.RoundFeedbackCancelled;
-                    continue;
-                }
+                    while (!roundCts.Token.IsCancellationRequested)
+                    {
+                        var elapsed = DateTime.UtcNow - startTime;
+                        var remaining = (int)(60 - elapsed.TotalSeconds);
+                        if (remaining < 0) remaining = 0;
 
-                bool wasCorrect = game.Guess(guess);
-                feedbackMessage = wasCorrect ?
-                    _strings.RoundFeedbackCorrectGuess(guess) :
-                    _strings.RoundFeedbackWrongGuess(guess);
+                        _renderer.DrawTimer(remaining); // Rita tiden
+                        _renderer.DrawAnimation(remaining); // Rita animation
+
+                        await Task.Delay(1000, roundCts.Token); // Vänta 1 sekund
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // Förväntat fel när rundan avslutas
+                }
+            }, roundCts.Token);
+
+
+            try
+            {
+                while (game.Status == GameStatus.InProgress)
+                {
+                    try
+                    {
+                        // 1. Vänta på gissning (skärmen är redan ritad)
+                        char guess = await _input.GetGuess(game.UsedLetters, roundCts.Token);
+
+                        if (guess == '\0') // Escape (användaravbrott)
+                        {
+                            game.ForceLose();
+                            feedbackMessage = _strings.RoundFeedbackCancelled;
+                            continue;
+                        }
+
+                        if (guess == (char)1) // Ogiltig gissning (från ConsoleInput)
+                        {
+                            // Inget feedback-meddelande, GetGuess skrev redan
+                        }
+                        else // Giltig gissning
+                        {
+                            bool wasCorrect = game.Guess(guess);
+                            feedbackMessage = wasCorrect ?
+                                _strings.RoundFeedbackCorrectGuess(guess) :
+                                _strings.RoundFeedbackWrongGuess(guess);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Timern gick ut!
+                        game.ForceLose();
+                        feedbackMessage = _strings.RoundTimerExpired;
+                    }
+
+                    // 2. Rita om skärmen MED resultatet (om spelet inte är slut)
+                    if (game.Status == GameStatus.InProgress)
+                    {
+                        _renderer.DrawGameScreen(game, playerGuessing, currentLives, feedbackMessage);
+                        feedbackMessage = string.Empty; // Nollställ för nästa gissning
+                    }
+                }
             }
+            finally
+            {
+                // Städa upp oavsett hur loopen avslutades
+
+                if (!roundCts.Token.IsCancellationRequested)
+                {
+                    roundCts.Cancel();
+                }
+                await Task.WhenAny(timerTask, Task.Delay(200));
+
+                _renderer.ClearTimerArea();
+                _renderer.ClearAnimationArea();
+                roundCts.Dispose();
+            }
+
 
             _renderer.ShowEndScreen(game, feedbackMessage);
 
@@ -260,7 +325,8 @@ namespace Hangman.Console
             else if (game.Status == GameStatus.Won)
                 _renderer.ShowFeedback($"{playerGuessing} {_strings.RoundWon}", ConsoleColor.Green);
 
-            return game.Status;
+            // Returnera tuplen
+            return (game.Status, feedbackMessage);
         }
 
         /// <summary>

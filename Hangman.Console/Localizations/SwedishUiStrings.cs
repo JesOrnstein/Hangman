@@ -192,5 +192,9 @@ namespace Hangman.Console.Localizations
 
         public string ErrorNoCustomWordsFound(WordDifficulty difficulty, WordLanguage language)
             => $"\nKunde inte starta spelet: Hittade inga anpassade ord i listan för {difficulty} ({language}). Lägg till ord via menyn.";
+
+        // --- NYTT FÖR TIMER ---
+        public string RoundTimerDisplay(int seconds) => $"Tid kvar: {seconds:D2}s";
+        public string RoundTimerExpired => "Tiden är ute!";
     }
 }

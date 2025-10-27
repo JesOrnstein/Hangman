@@ -6,7 +6,6 @@ namespace Hangman.Console
 {
     /// <summary>
     /// Hanterar all inmatning från konsolen.
-    /// Ansvarar för att hämta tangenter, strängar och validera inmatning.
     /// </summary>
     public class ConsoleInput
     {
@@ -18,46 +17,61 @@ namespace Hangman.Console
         }
 
         /// <summary>
-        /// Hämtar en enskild bokstavsgissning.
-        /// Validerar att det är en bokstav och att den inte redan gissats.
+        /// Hämtar en enskild bokstavsgissning asynkront.
+        /// Avbryts av CancellationToken (timer).
         /// Returnerar '\0' om användaren trycker Escape.
+        /// Kastar OperationCanceledException om timern går ut.
         /// </summary>
-        public char GetGuess(IEnumerable<char> usedLetters)
+        public async Task<char> GetGuess(IEnumerable<char> usedLetters, CancellationToken token)
         {
-            while (true)
+            // Prompten skrivs nu ut av ConsoleRenderer.DrawGameScreen
+
+            while (!token.IsCancellationRequested)
             {
-                System.Console.Write(_strings.GetGuessPrompt);
-                var key = System.Console.ReadKey(intercept: true);
-
-                if (key.Key == ConsoleKey.Escape)
+                // Kolla om en tangent är tillgänglig
+                if (System.Console.KeyAvailable)
                 {
-                    System.Console.WriteLine();
-                    return '\0'; // Signalera Escape
+                    var key = System.Console.ReadKey(intercept: true);
+
+                    if (key.Key == ConsoleKey.Escape)
+                    {
+                        System.Console.WriteLine();
+                        return '\0'; // Signalera Escape
+                    }
+
+                    char letter = key.KeyChar;
+
+                    if (!char.IsLetter(letter))
+                    {
+                        System.Console.ForegroundColor = ConsoleColor.Yellow;
+                        System.Console.WriteLine(_strings.GetGuessInvalid(letter));
+                        System.Console.ResetColor();
+                        // Be om ny gissning (prompten ritas om av GameController)
+                        return (char)1; // Signalera ogiltig gissning
+                    }
+
+                    char upperGuess = char.ToUpperInvariant(letter);
+
+                    if (usedLetters.Contains(upperGuess))
+                    {
+                        System.Console.ForegroundColor = ConsoleColor.Yellow;
+                        System.Console.WriteLine(_strings.GetGuessAlreadyGuessed(upperGuess));
+                        System.Console.ResetColor();
+                        // Be om ny gissning (prompten ritas om av GameController)
+                        return (char)1; // Signalera ogiltig gissning
+                    }
+
+                    System.Console.WriteLine(upperGuess); // Eka den giltiga gissningen
+                    return upperGuess; // Returnera giltig gissning
                 }
 
-                char letter = key.KeyChar;
-
-                if (!char.IsLetter(letter))
-                {
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                    System.Console.WriteLine(_strings.GetGuessInvalid(letter));
-                    System.Console.ResetColor();
-                    continue;
-                }
-
-                char upperGuess = char.ToUpperInvariant(letter);
-
-                if (usedLetters.Contains(upperGuess))
-                {
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                    System.Console.WriteLine(_strings.GetGuessAlreadyGuessed(upperGuess));
-                    System.Console.ResetColor();
-                    continue;
-                }
-
-                System.Console.WriteLine(upperGuess); // Eka den giltiga gissningen
-                return upperGuess;
+                // Vänta 100ms innan vi kollar efter tangent/avbrott igen
+                // Detta förhindrar att CPU:n snurrar i 100%
+                await Task.Delay(100, token);
             }
+
+            // Om vi hamnar här har loopen avbrutits av CancellationToken
+            throw new OperationCanceledException();
         }
 
         /// <summary>

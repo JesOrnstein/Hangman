@@ -147,5 +147,9 @@ namespace Hangman.Console.Localizations
         string GetGuessInvalid(char letter);
         string GetGuessAlreadyGuessed(char letter);
         string GetPlayerNameEmpty { get; }
+
+        // --- NYTT FÖR TIMER ---
+        string RoundTimerDisplay(int seconds);
+        string RoundTimerExpired { get; }
     }
 }

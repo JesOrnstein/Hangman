@@ -192,5 +192,9 @@ namespace Hangman.Console.Localizations
 
         public string ErrorNoCustomWordsFound(WordDifficulty difficulty, WordLanguage language)
             => $"\nCould not start game: No custom words found in the list for {difficulty} ({language}). Please add words via the menu.";
+
+        // --- NYTT FÖR TIMER ---
+        public string RoundTimerDisplay(int seconds) => $"Time left: {seconds:D2}s";
+        public string RoundTimerExpired => "Time's up!";
     }
 }
