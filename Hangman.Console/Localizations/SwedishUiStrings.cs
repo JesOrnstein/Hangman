@@ -11,22 +11,22 @@ namespace Hangman.Console.Localizations
     {
         // Välkomstskärm
         public string WelcomeTitleArt => @"
-     _   _    _    _   _  ____ __  __    _    _   _
-    | | | |  / \  | \ | |/ ___|  \/  |  / \  | \ | |
-    | |_| | / _ \ |  \| | |  _| |\/| | / _ \ |  \| |
-    |  _  |/ ___ \| |\  | |_| | |  | |/ ___ \| |\  |
-    |_| |_/_/   \_\_| \_|\____|_|  |_/_/   \_\_| \_|
+      _   _   _ _ _   _    _   ____     _            ____   _   _   ____   ____   ____ 
+     | | | |   / \    | \ | | / ___|   / \          / ___| | | | | | __ \ | __ \ | ___|
+     | |_| |  / _ \   |  \| | | |  _  / _ \        | |  _  | | | | | |_) || |_) || |__  
+     |  _  | / ___ \  | |\  | | |_| |/ ___ \       | |_| | | |_| | | |_)  | |_) || ___| 
+     |_| |_|/_/   \_\ |_| \_| \____|/_/   \_\       \____| \_____/ |____/ |____/ |____|
 ";
         public string WelcomeMessage => "\n\n          Välkommen till HÄNGA GUBBE!";
         public string WelcomePressAnyKey => "     Tryck valfri tangent för att starta...";
 
         // Huvudmeny
         public string MainMenuTitleArt => @"
-     _   _    _    _   _  ____ __  __    _    _   _
-    | | | |  / \  | \ | |/ ___|  \/  |  / \  | \ | |
-    | |_| | / _ \ |  \| | |  _| |\/| | / _ \ |  \| |
-    |  _  |/ ___ \| |\  | |_| | |  | |/ ___ \| |\  |
-    |_| |_/_/   \_\_| \_|\____|_|  |_/_/   \_\_| \_|
+      _   _   _ _ _   _    _   ____     _            ____   _   _   ____   ____   ____ 
+     | | | |   / \    | \ | | / ___|   / \          / ___| | | | | | __ \ | __ \ | ___|
+     | |_| |  / _ \   |  \| | | |  _  / _ \        | |  _  | | | | | |_) || |_) || |__  
+     |  _  | / ___ \  | |\  | | |_| |/ ___ \       | |_| | | |_| | | |_)  | |_) || ___| 
+     |_| |_|/_/   \_\ |_| \_| \____|/_/   \_\       \____| \_____/ |____/ |____/ |____|
             ";
         public string MainMenuGallowsArt => @"
         +-------+
@@ -166,5 +166,13 @@ namespace Hangman.Console.Localizations
         public string GetGuessInvalid(char letter) => $"\nOgiltig gissning '{letter}'. Endast bokstäver (A-Ö).";
         public string GetGuessAlreadyGuessed(char letter) => $"\nDu har redan gissat på '{letter}'. Försök igen.";
         public string GetPlayerNameEmpty => "\nNamnet kan inte vara tomt. Försök igen (eller Escape för att backa).";
+
+        // --- NYA IMPLEMENTATIONER FÖR EXCEPTIONS ---
+
+        public string ErrorWordAlreadyExists(string word, WordDifficulty difficulty, WordLanguage language)
+            => $"\nKunde inte lägga till ordet: '{word}' finns redan i listan för {difficulty} ({language}).";
+
+        public string ErrorNoCustomWordsFound(WordDifficulty difficulty, WordLanguage language)
+            => $"\nKunde inte starta spelet: Hittade inga anpassade ord i listan för {difficulty} ({language}). Lägg till ord via menyn.";
     }
 }

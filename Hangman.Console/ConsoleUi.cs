@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
 using Hangman.Console.Localizations;
+using Hangman.Core.Exceptions; // <-- NY IMPORT
 
 namespace Hangman.Console
 {
@@ -25,7 +26,6 @@ namespace Hangman.Console
         private readonly IUiStrings _strings; // <-- NYTT: Strategi-fält
 
         // Visualisering av galgen (ASCII-konst)
-        // ... (HangmanStages-arrayen är oförändrad) ...
         private static readonly string[] HangmanStages =
         {
             // 0 fel
@@ -204,6 +204,16 @@ namespace Hangman.Console
                 {
                     secret = await provider.GetWordAsync();
                 }
+                catch (NoCustomWordsFoundException ex)
+                {
+                    System.Console.ForegroundColor = ConsoleColor.Red;
+                    System.Console.WriteLine(_strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language));
+                    System.Console.ResetColor();
+                    System.Console.WriteLine(_strings.CommonPressAnyKeyToContinue);
+                    System.Console.ReadKey();
+                    roundResult = GameStatus.Lost;
+                    break;
+                }
                 catch (Exception ex)
                 {
                     System.Console.ForegroundColor = ConsoleColor.Red;
@@ -346,12 +356,21 @@ namespace Hangman.Console
                 System.Console.WriteLine(_strings.AddWordSuccess(word, calculatedDifficulty, language.Value));
                 System.Console.ResetColor();
             }
+            // KORREKT ORDNING 1: Fånga den mest specifika typen först
+            catch (WordAlreadyExistsException ex)
+            {
+                System.Console.ForegroundColor = ConsoleColor.Yellow;
+                System.Console.WriteLine(_strings.ErrorWordAlreadyExists(ex.Word, ex.Difficulty, ex.Language));
+                System.Console.ResetColor();
+            }
+            // KORREKT ORDNING 2: Fånga sedan den mer generella bastypen
             catch (InvalidOperationException ex)
             {
                 System.Console.ForegroundColor = ConsoleColor.Yellow;
                 System.Console.WriteLine(_strings.AddWordErrorExists(ex.Message));
                 System.Console.ResetColor();
             }
+            // KORREKT ORDNING 3: Fånga alla andra typer av fel sist
             catch (Exception ex)
             {
                 System.Console.ForegroundColor = ConsoleColor.Red;
@@ -465,11 +484,21 @@ namespace Hangman.Console
                 {
                     secret = await tournament.StartNewRoundAsync();
                 }
-                catch (InvalidOperationException)
+                // VIKTIG ORDNING: fånga mest specifika undantag först
+                catch (NoCustomWordsFoundException ex) // tom ordlista
+                {
+                    System.Console.ForegroundColor = ConsoleColor.Red;
+                    System.Console.WriteLine(_strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language));
+                    System.Console.ResetColor();
+                    System.Console.WriteLine(_strings.CommonPressAnyKeyToContinue);
+                    System.Console.ReadKey(true);
+                    return; // Avsluta turneringen
+                }
+                catch (InvalidOperationException) // slut på turneringen
                 {
                     break;
                 }
-                catch (Exception ex)
+                catch (Exception ex) // övriga fel
                 {
                     System.Console.ForegroundColor = ConsoleColor.Red;
                     System.Console.WriteLine(_strings.ErrorCouldNotFetchTournamentWord(ex.Message));
@@ -541,15 +570,15 @@ namespace Hangman.Console
             System.Console.ReadKey(true);
         }
 
-        // --- (MODIFIERAD) Val av ordkälla ---
+        // --- (Oförändrad) Val av ordkälla ---
         private (IAsyncWordProvider? Provider, WordDifficulty? Difficulty) SelectWordSource()
         {
             System.Console.Clear();
             System.Console.WriteLine(_strings.SelectWordSourceTitle);
             System.Console.WriteLine(_strings.SelectWordSourceApi);
             System.Console.WriteLine(_strings.SelectWordSourceLocal);
-            System.Console.WriteLine(_strings.SelectWordSourceCustomSwedish); // ÄNDRAD
-            System.Console.WriteLine(_strings.SelectWordSourceCustomEnglish); // NY
+            System.Console.WriteLine(_strings.SelectWordSourceCustomSwedish);
+            System.Console.WriteLine(_strings.SelectWordSourceCustomEnglish);
             System.Console.WriteLine(_strings.CommonPressEscapeToCancel);
             System.Console.Write(_strings.SelectWordSourcePrompt);
 
@@ -579,7 +608,6 @@ namespace Hangman.Console
                         System.Console.WriteLine(_strings.FeedbackWordSourceCustomSwedish);
                         difficulty = SelectDifficulty(_strings.FeedbackWordSourceCustomSwedish);
                         if (difficulty == null) return (null, null);
-                        // NYTT: Skickar med WordLanguage.Swedish
                         return (new CustomWordProvider(difficulty.Value, WordLanguage.Swedish), difficulty.Value);
 
                     case ConsoleKey.D4:
@@ -587,7 +615,6 @@ namespace Hangman.Console
                         System.Console.WriteLine(_strings.FeedbackWordSourceCustomEnglish);
                         difficulty = SelectDifficulty(_strings.FeedbackWordSourceCustomEnglish);
                         if (difficulty == null) return (null, null);
-                        // NYTT: Skickar med WordLanguage.English
                         return (new CustomWordProvider(difficulty.Value, WordLanguage.English), difficulty.Value);
 
                     case ConsoleKey.Escape:
@@ -597,6 +624,7 @@ namespace Hangman.Console
             }
         }
 
+        // --- (Oförändrad) Val av svårighetsgrad ---
         private WordDifficulty? SelectDifficulty(string source)
         {
             System.Console.Clear();
@@ -634,6 +662,7 @@ namespace Hangman.Console
             }
         }
 
+        // --- (Oförändrad) Spela en runda ---
         private GameStatus PlayRound(string playerGuessing, string secret, int currentLives)
         {
             int maxMistakes = 6;
@@ -650,7 +679,7 @@ namespace Hangman.Console
                 DrawGameScreen(playerGuessing, currentLives);
 
                 char guess = GetGuess();
-                if (guess == '\0')
+                if (guess == '\0') // Escape pressed
                 {
                     _game.ForceLose();
                     _feedbackMessage = _strings.RoundFeedbackCancelled;
@@ -669,23 +698,24 @@ namespace Hangman.Console
                 }
             }
 
-            ShowEndScreen();
+            ShowEndScreen(); // Visar slutskärmen (Vinst/Förlust/Avbruten)
 
-            if (_game.Status == GameStatus.Lost)
+            // Skriv ut vem som vann/förlorade rundan (om den inte avbröts)
+            if (_game.Status == GameStatus.Lost && _feedbackMessage != _strings.RoundFeedbackCancelled)
             {
-                if (_feedbackMessage != _strings.RoundFeedbackCancelled)
-                {
-                    System.Console.WriteLine($"\n{playerGuessing} {_strings.RoundLost}");
-                }
+                System.Console.WriteLine($"\n{playerGuessing} {_strings.RoundLost}");
             }
-            else
+            else if (_game.Status == GameStatus.Won)
             {
                 System.Console.WriteLine($"\n{playerGuessing} {_strings.RoundWon}");
             }
+            // Om _feedbackMessage == _strings.RoundFeedbackCancelled, skrivs inget extra ut här
 
             return _game.Status;
         }
 
+
+        // --- (Oförändrad) Rita spelskärmen ---
         private void DrawGameScreen(string playerGuessing, int currentLives)
         {
             System.Console.Clear();
@@ -724,17 +754,25 @@ namespace Hangman.Console
 
             if (!string.IsNullOrEmpty(_feedbackMessage))
             {
-                if (_feedbackMessage.StartsWith("Korrekt") || _feedbackMessage.StartsWith("Correct"))
+                // Sätt färg baserat på feedback-typ
+                // Använder StartsWith för att korrekt gissning ska bli grön
+                if (_feedbackMessage.StartsWith(_strings.RoundFeedbackCorrectGuess('X').Substring(0, 5))) // Jämför start av strängen
                 {
                     System.Console.ForegroundColor = ConsoleColor.Green;
                 }
-                else
+                else if (_feedbackMessage == _strings.RoundFeedbackCancelled)
+                {
+                    System.Console.ForegroundColor = ConsoleColor.DarkGray; // Eller någon annan färg för avbruten
+                }
+                else // Wrong guess or already guessed
                 {
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
                 }
+
                 System.Console.WriteLine(_feedbackMessage);
                 System.Console.ResetColor();
 
+                // Nollställ inte meddelandet om rundan avbröts, så det syns på slutskärmen
                 if (_feedbackMessage != _strings.RoundFeedbackCancelled)
                 {
                     _feedbackMessage = string.Empty;
@@ -742,17 +780,16 @@ namespace Hangman.Console
             }
         }
 
-        // Ritar gubben baserat på antal fel
+        // --- (Oförändrad) Rita galgen ---
         private void DrawHangman(int mistakes)
         {
-            // ... (Oförändrad) ...
             int stage = Math.Clamp(mistakes, 0, HangmanStages.Length - 1);
             System.Console.ForegroundColor = ConsoleColor.Cyan;
             System.Console.WriteLine(HangmanStages[stage]);
             System.Console.ResetColor();
         }
 
-        // Hämtar en giltig bokstavsgissning från användaren
+        // --- (Oförändrad) Hämta gissning ---
         private char GetGuess()
         {
             while (true)
@@ -763,8 +800,8 @@ namespace Hangman.Console
 
                 if (key.Key == ConsoleKey.Escape)
                 {
-                    System.Console.WriteLine(_strings.CommonFeedbackCancelling);
-                    return '\0';
+                    System.Console.WriteLine(); // Ny rad efter prompten
+                    return '\0'; // Returnera null-tecken för att signalera Escape
                 }
 
                 char letter = key.KeyChar;
@@ -772,7 +809,7 @@ namespace Hangman.Console
                 if (!char.IsLetter(letter))
                 {
                     System.Console.WriteLine(_strings.GetGuessInvalid(letter));
-                    continue;
+                    continue; // Fråga igen
                 }
 
                 char upperGuess = char.ToUpperInvariant(letter);
@@ -780,19 +817,22 @@ namespace Hangman.Console
                 if (_game!.UsedLetters.Contains(upperGuess))
                 {
                     System.Console.WriteLine(_strings.GetGuessAlreadyGuessed(upperGuess));
-                    continue;
+                    continue; // Fråga igen
                 }
 
-                System.Console.WriteLine(upperGuess);
+                System.Console.WriteLine(upperGuess); // Eka den giltiga gissningen
                 return upperGuess;
             }
         }
 
+        // --- (Oförändrad) Visa slutskärm ---
         private void ShowEndScreen()
         {
-            System.Console.Clear();
+            System.Console.Clear(); // Rensa skärmen för slutresultatet
 
-            DrawHangman(_game!.Mistakes);
+            DrawHangman(_game!.Mistakes); // Visa den slutliga galgen
+
+            System.Console.WriteLine(); // Tom rad för luft
 
             if (_game!.Status == GameStatus.Won)
             {
@@ -811,31 +851,34 @@ namespace Hangman.Console
                     System.Console.WriteLine(_strings.EndScreenLost);
                 }
             }
-
             System.Console.ResetColor();
+
             System.Console.WriteLine(_strings.EndScreenCorrectWord(_game!.Secret));
+            System.Console.WriteLine(); // Tom rad
         }
 
-        // Hjälpmetod för att hämta spelarnamn
+
+        // --- (Oförändrad) Hämta spelarnamn ---
         private string? GetPlayerName(string prompt)
         {
             string? name;
             while (true)
             {
-                name = GetInputString(prompt);
+                name = GetInputString(prompt); // Använder nu GetInputString
 
-                if (name == null) return null;
+                if (name == null) return null; // Användaren tryckte Escape
 
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    return name.Trim();
+                    return name.Trim(); // Returnera trimmade namnet om det inte är tomt
                 }
 
+                // Om namnet var tomt, skriv felmeddelande och loopa igen
                 System.Console.WriteLine(_strings.GetPlayerNameEmpty);
             }
         }
 
-        // NY HJÄLPMETOD: Ersätter Console.ReadLine() för att fånga Escape
+        // --- (Oförändrad) Hämta input-sträng (med Escape-hantering) ---
         private string? GetInputString(string prompt)
         {
             System.Console.Write(prompt);
@@ -847,25 +890,25 @@ namespace Hangman.Console
 
                 if (key.Key == ConsoleKey.Escape)
                 {
-                    System.Console.WriteLine($"\n{_strings.CommonFeedbackCancelling}");
-                    return null;
+                    System.Console.WriteLine($"\n{_strings.CommonFeedbackCancelling}"); // Ge feedback
+                    return null; // Signalera att användaren avbröt
                 }
 
                 if (key.Key == ConsoleKey.Enter)
                 {
-                    System.Console.WriteLine();
-                    return sb.ToString();
+                    System.Console.WriteLine(); // Ny rad efter Enter
+                    return sb.ToString(); // Returnera den insamlade strängen
                 }
 
                 if (key.Key == ConsoleKey.Backspace && sb.Length > 0)
                 {
-                    sb.Length--;
-                    System.Console.Write("\b \b");
+                    sb.Length--; // Ta bort sista tecknet från bufferten
+                    System.Console.Write("\b \b"); // Flytta tillbaka, skriv över med mellanslag, flytta tillbaka igen
                 }
                 else if (!char.IsControl(key.KeyChar))
                 {
                     sb.Append(key.KeyChar);
-                    System.Console.Write(key.KeyChar);
+                    System.Console.Write(key.KeyChar); // Eka tecknet till konsolen
                 }
             }
         }

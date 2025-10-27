@@ -1,12 +1,13 @@
-﻿using Hangman.Core.Models;
+﻿using Hangman.Core.Exceptions;
+using Hangman.Core.Models;
+using Hangman.Core.Providers.Db;
 using Hangman.Core.Providers.Interface;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Hangman.Core.Providers.Db;
-using Microsoft.EntityFrameworkCore;
 
 namespace Hangman.Core.Providers.Local
 {
@@ -36,7 +37,8 @@ namespace Hangman.Core.Providers.Local
         public async Task AddWordAsync(string word, WordDifficulty difficulty, WordLanguage language)
         {
             if (string.IsNullOrWhiteSpace(word))
-                throw new ArgumentException("Ordet får inte vara tomt.", nameof(word));
+                // ÄNDRAD: Generiskt meddelande för loggning/intern användning
+                throw new ArgumentException("Word cannot be null or whitespace.", nameof(word));
 
             // Skapa posten. Konstruktorn gör ordet till VERSALER.
             var newEntry = new CustomWordEntry(word, difficulty, language)
@@ -55,8 +57,8 @@ namespace Hangman.Core.Providers.Local
                     e.Difficulty == newEntry.Difficulty &&
                     e.Language == newEntry.Language))
                 {
-                    // NYTT: Uppdaterat felmeddelande
-                    throw new InvalidOperationException($"Ordet '{word}' finns redan i listan för svårighetsgrad {difficulty} ({language}).");
+                    // ÄNDRAD: Kasta ditt nya, specifika undantag med data
+                    throw new WordAlreadyExistsException(newEntry.Word, newEntry.Difficulty, newEntry.Language);
                 }
 
                 context.CustomWords.Add(newEntry);
@@ -81,8 +83,8 @@ namespace Hangman.Core.Providers.Local
 
             if (!availableWords.Any())
             {
-                // NYTT: Uppdaterat felmeddelande
-                throw new InvalidOperationException($"Hittade inga anpassade ord i listan för svårighetsgrad {_difficulty} ({_language}). Lägg till ord via menyn.");
+                // ÄNDRAD: Kasta ditt andra nya, specifika undantag med data
+                throw new NoCustomWordsFoundException(_difficulty, _language);
             }
 
             int index = _rng.Next(availableWords.Count);

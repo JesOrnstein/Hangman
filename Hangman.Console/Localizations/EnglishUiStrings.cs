@@ -166,5 +166,13 @@ namespace Hangman.Console.Localizations
         public string GetGuessInvalid(char letter) => $"\nInvalid guess '{letter}'. Only letters (A-Z).";
         public string GetGuessAlreadyGuessed(char letter) => $"\nYou have already guessed '{letter}'. Try again.";
         public string GetPlayerNameEmpty => "\nName cannot be empty. Try again (or Escape to go back).";
+
+        // --- NEW IMPLEMENTATIONS FOR EXCEPTIONS ---
+
+        public string ErrorWordAlreadyExists(string word, WordDifficulty difficulty, WordLanguage language)
+            => $"\nCould not add word: '{word}' already exists in the list for {difficulty} ({language}).";
+
+        public string ErrorNoCustomWordsFound(WordDifficulty difficulty, WordLanguage language)
+            => $"\nCould not start game: No custom words found in the list for {difficulty} ({language}). Please add words via the menu.";
     }
 }

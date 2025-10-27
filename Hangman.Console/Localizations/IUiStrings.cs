@@ -35,13 +35,13 @@ namespace Hangman.Console.Localizations
         string SelectWordSourceTitle { get; }
         string SelectWordSourceApi { get; }
         string SelectWordSourceLocal { get; }
-        string SelectWordSourceCustomSwedish { get; } // ÄNDRAD
-        string SelectWordSourceCustomEnglish { get; } // NY
+        string SelectWordSourceCustomSwedish { get; }
+        string SelectWordSourceCustomEnglish { get; }
         string SelectWordSourcePrompt { get; }
         string FeedbackWordSourceApi { get; }
         string FeedbackWordSourceLocal { get; }
-        string FeedbackWordSourceCustomSwedish { get; } // ÄNDRAD
-        string FeedbackWordSourceCustomEnglish { get; } // NY
+        string FeedbackWordSourceCustomSwedish { get; }
+        string FeedbackWordSourceCustomEnglish { get; }
 
         // Val av svårighetsgrad
         string SelectDifficultyTitle(string source);
@@ -70,6 +70,7 @@ namespace Hangman.Console.Localizations
         string FeedbackPressAnyKeyToSave { get; }
         string FeedbackHighscoreSaved(int wins, WordDifficulty difficulty);
         string FeedbackReturningToMenu { get; }
+        string ErrorNoCustomWordsFound(WordDifficulty difficulty, WordLanguage language); // <-- NY METOD
 
         // Spela (Turnering)
         string TournamentTitle { get; }
@@ -101,12 +102,13 @@ namespace Hangman.Console.Localizations
         string AddWordTitle { get; }
         string AddWordPrompt { get; }
         string AddWordInvalid { get; }
-        string AddWordSuccess(string word, WordDifficulty difficulty, WordLanguage language); // ÄNDRAD
+        string AddWordSuccess(string word, WordDifficulty difficulty, WordLanguage language);
         string AddWordErrorExists(string message);
-        string AddWordSelectLanguageTitle { get; } // NY
-        string AddWordSelectLanguagePrompt { get; } // NY
-        string AddWordLanguageSwedish { get; } // NY
-        string AddWordLanguageEnglish { get; } // NY
+        string AddWordSelectLanguageTitle { get; }
+        string AddWordSelectLanguagePrompt { get; }
+        string AddWordLanguageSwedish { get; }
+        string AddWordLanguageEnglish { get; }
+        string ErrorWordAlreadyExists(string word, WordDifficulty difficulty, WordLanguage language); // <-- NY METOD
 
         // Hjälpskärm
         string HelpTitle { get; }
