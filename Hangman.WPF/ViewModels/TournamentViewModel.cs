@@ -177,6 +177,9 @@ namespace Hangman.WPF.ViewModels
             UpdateUiProperties();
             SecondsLeft = 60;
             _timer.Start();
+
+            // Tvingar WPF att utvärdera GuessCommand.CanExecute igen, vilket återställer knapparna.
+            if (GuessCommand is RelayCommand rc) rc.RaiseCanExecuteChanged();
         }
 
         private void EndTournament()
