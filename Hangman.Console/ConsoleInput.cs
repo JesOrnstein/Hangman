@@ -33,7 +33,10 @@ namespace Hangman.Console
 
                     if (key.Key == ConsoleKey.Escape)
                     {
-                        System.Console.WriteLine();
+                        lock (ConsoleRenderer.ConsoleLock)
+                        {
+                            System.Console.WriteLine();
+                        }
                         return '\0'; // Escape
                     }
 
@@ -41,9 +44,12 @@ namespace Hangman.Console
 
                     if (!char.IsLetter(letter))
                     {
-                        System.Console.ForegroundColor = ConsoleColor.Yellow;
-                        System.Console.WriteLine(_strings.GetGuessInvalid(letter));
-                        System.Console.ResetColor();
+                        lock (ConsoleRenderer.ConsoleLock)
+                        {
+                            System.Console.ForegroundColor = ConsoleColor.Yellow;
+                            System.Console.WriteLine(_strings.GetGuessInvalid(letter));
+                            System.Console.ResetColor();
+                        }
                         return (char)1; // Signalera ogiltig gissning
                     }
 
@@ -51,13 +57,19 @@ namespace Hangman.Console
 
                     if (usedLetters.Contains(upperGuess))
                     {
-                        System.Console.ForegroundColor = ConsoleColor.Yellow;
-                        System.Console.WriteLine(_strings.GetGuessAlreadyGuessed(upperGuess));
-                        System.Console.ResetColor();
+                        lock (ConsoleRenderer.ConsoleLock)
+                        {
+                            System.Console.ForegroundColor = ConsoleColor.Yellow;
+                            System.Console.WriteLine(_strings.GetGuessAlreadyGuessed(upperGuess));
+                            System.Console.ResetColor();
+                        }
                         return (char)1; // Signalera ogiltig gissning
                     }
 
-                    System.Console.WriteLine(upperGuess);
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.WriteLine(upperGuess);
+                    }
                     return upperGuess;
                 }
 
@@ -86,9 +98,12 @@ namespace Hangman.Console
                     return name.Trim();
                 }
 
-                System.Console.ForegroundColor = ConsoleColor.Yellow;
-                System.Console.WriteLine(_strings.GetPlayerNameEmpty);
-                System.Console.ResetColor();
+                lock (ConsoleRenderer.ConsoleLock)
+                {
+                    System.Console.ForegroundColor = ConsoleColor.Yellow;
+                    System.Console.WriteLine(_strings.GetPlayerNameEmpty);
+                    System.Console.ResetColor();
+                }
             }
         }
 
@@ -98,7 +113,10 @@ namespace Hangman.Console
         /// </summary>
         public string? GetInputString(string prompt)
         {
-            System.Console.Write(prompt);
+            lock (ConsoleRenderer.ConsoleLock)
+            {
+                System.Console.Write(prompt);
+            }
             var sb = new StringBuilder();
 
             while (true)
@@ -107,25 +125,37 @@ namespace Hangman.Console
 
                 if (key.Key == ConsoleKey.Escape)
                 {
-                    System.Console.WriteLine($"\n{_strings.CommonFeedbackCancelling}");
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.WriteLine($"\n{_strings.CommonFeedbackCancelling}");
+                    }
                     return null;
                 }
 
                 if (key.Key == ConsoleKey.Enter)
                 {
-                    System.Console.WriteLine();
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.WriteLine();
+                    }
                     return sb.ToString();
                 }
 
                 if (key.Key == ConsoleKey.Backspace && sb.Length > 0)
                 {
                     sb.Length--;
-                    System.Console.Write("\b \b");
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.Write("\b \b");
+                    }
                 }
                 else if (!char.IsControl(key.KeyChar))
                 {
                     sb.Append(key.KeyChar);
-                    System.Console.Write(key.KeyChar);
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.Write(key.KeyChar);
+                    }
                 }
             }
         }
@@ -142,13 +172,19 @@ namespace Hangman.Console
 
                 if (allowEscape && key.Key == ConsoleKey.Escape)
                 {
-                    System.Console.WriteLine(_strings.CommonFeedbackCancelling);
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.WriteLine(_strings.CommonFeedbackCancelling);
+                    }
                     return '\0';
                 }
 
                 if (validChars.Contains(key.KeyChar))
                 {
-                    System.Console.WriteLine(key.KeyChar);
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.WriteLine(key.KeyChar);
+                    }
                     return key.KeyChar;
                 }
             }
@@ -160,7 +196,10 @@ namespace Hangman.Console
         /// </summary>
         public bool GetYesNo(string prompt)
         {
-            System.Console.Write(prompt);
+            lock (ConsoleRenderer.ConsoleLock)
+            {
+                System.Console.Write(prompt);
+            }
             while (true)
             {
                 var key = System.Console.ReadKey(intercept: true);
@@ -168,14 +207,20 @@ namespace Hangman.Console
                 if (key.Key == ConsoleKey.Escape ||
                     key.KeyChar == 'n' || key.KeyChar == 'N')
                 {
-                    System.Console.WriteLine(_strings.FeedbackEndingLoop);
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.WriteLine(_strings.FeedbackEndingLoop);
+                    }
                     return false;
                 }
 
                 if (key.KeyChar == 'j' || key.KeyChar == 'J' ||
                     key.KeyChar == 'y' || key.KeyChar == 'Y')
                 {
-                    System.Console.WriteLine(_strings.FeedbackContinuing);
+                    lock (ConsoleRenderer.ConsoleLock)
+                    {
+                        System.Console.WriteLine(_strings.FeedbackContinuing);
+                    }
                     return true;
                 }
             }
@@ -187,12 +232,15 @@ namespace Hangman.Console
         /// </summary>
         public WordLanguage? SelectLanguage()
         {
-            System.Console.Clear();
-            System.Console.WriteLine(_strings.AddWordSelectLanguageTitle);
-            System.Console.WriteLine(_strings.AddWordLanguageSwedish);
-            System.Console.WriteLine(_strings.AddWordLanguageEnglish);
-            System.Console.WriteLine(_strings.CommonPressEscapeToCancel);
-            System.Console.Write(_strings.AddWordSelectLanguagePrompt);
+            lock (ConsoleRenderer.ConsoleLock)
+            {
+                System.Console.Clear();
+                System.Console.WriteLine(_strings.AddWordSelectLanguageTitle);
+                System.Console.WriteLine(_strings.AddWordLanguageSwedish);
+                System.Console.WriteLine(_strings.AddWordLanguageEnglish);
+                System.Console.WriteLine(_strings.CommonPressEscapeToCancel);
+                System.Console.Write(_strings.AddWordSelectLanguagePrompt);
+            }
 
             var choice = GetMenuChoice("12", allowEscape: true);
             switch (choice)
