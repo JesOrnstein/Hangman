@@ -6,10 +6,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              d:DesignHeight="500" d:DesignWidth="800">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
-        <TextBlock Text="{Binding Strings.MainMenuWpfTitle}" 
-                   FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
-        <Button Content="{Binding Strings.MenuPlaySingle}" Command="{Binding StartSinglePlayerCommand}" Margin="0,20,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
+        <Image Source="/Images/stage_6.png" Height="120" Margin="0,0,0,10" Stretch="Uniform"/>
+
+        <TextBlock Text="{Binding Strings.MainMenuWpfTitle}" 
+                   FontSize="36" 
+                   FontWeight="ExtraBold" 
+                   Foreground="#303030"
+                   HorizontalAlignment="Center" 
+                   Margin="0,0,0,40"/>
+
+        <Button Content="{Binding Strings.MenuPlaySingle}" Command="{Binding StartSinglePlayerCommand}" Margin="0,0,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
         <Button Content="{Binding Strings.MenuPlayTournament}" Command="{Binding StartTournamentCommand}" Margin="0,5,0,0" Padding="10" FontWeight="Bold" FontSize="16"/>
         <Button Content="{Binding Strings.MenuShowHighscores}" Command="{Binding NavigateToHighscoresCommand}" Margin="0,20" Padding="5"/>
 
