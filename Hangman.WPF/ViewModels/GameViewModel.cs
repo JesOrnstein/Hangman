@@ -1,16 +1,16 @@
 ﻿using Hangman.Core;
+using Hangman.Core.Exceptions;
+using Hangman.Core.Localizations;
 using Hangman.Core.Models;
+using Hangman.Core.Providers.Api;
 using Hangman.Core.Providers.Interface;
+using Hangman.Core.Providers.Local;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using System;
-using Hangman.Core.Exceptions;
-using System.Windows;
-using Hangman.Core.Providers.Api;
-using Hangman.Core.Providers.Local;
-using Hangman.Core.Localizations;
 // using System.Reflection; // Reflection är borttagen
 
 namespace Hangman.WPF.ViewModels
@@ -42,7 +42,7 @@ namespace Hangman.WPF.ViewModels
         private string _usedLetters = "";
         public string UsedLetters { get => _usedLetters; set { _usedLetters = value; OnPropertyChanged(); } }
 
-        private string _gallowsImageSource = "/Images/stage_0.png";
+        private string _gallowsImageSource = Pack("/Images/stage_0.png");
         public string GallowsImageSource { get => _gallowsImageSource; set { _gallowsImageSource = value; OnPropertyChanged(); } }
 
         private int _secondsLeft = 60;
@@ -106,7 +106,7 @@ namespace Hangman.WPF.ViewModels
             GameEndMessage = string.Empty;
             MaskedWord = _strings.FeedbackFetchingWord("...");
             UsedLetters = "";
-            GallowsImageSource = "/Images/stage_0.png";
+            GallowsImageSource = Pack("/Images/stage_0.png");
             CreakAnimationText = string.Empty;
 
             try
@@ -217,7 +217,7 @@ namespace Hangman.WPF.ViewModels
         {
             MaskedWord = string.Join(" ", _game.GetMaskedWord().ToCharArray());
             UsedLetters = $"{_strings.RoundGuessedLetters} {string.Join(", ", _game.UsedLetters.OrderBy(c => c))}";
-            GallowsImageSource = $"/Images/stage_{_game.Mistakes}.png";
+            GallowsImageSource = Pack($"/Images/stage_{_game.Mistakes}.png");
         }
 
         private async void ExitGame(bool saveScore)
@@ -248,5 +248,8 @@ namespace Hangman.WPF.ViewModels
 
             await _statisticsService.SaveHighscoreAsync(newScore);
         }
+
+        private static string Pack(string relative) =>
+            $"pack://application:,,,/Hangman.WPF;component{relative}";
     }
 }
