@@ -209,7 +209,7 @@ namespace Hangman.Console
                 {
                     lock (ConsoleRenderer.ConsoleLock)
                     {
-                        System.Console.WriteLine(_strings.FeedbackEndingLoop);
+                        System.Console.Write(_strings.FeedbackEndingLoop);
                     }
                     return false;
                 }
