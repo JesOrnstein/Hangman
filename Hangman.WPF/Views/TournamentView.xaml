@@ -52,8 +52,7 @@
         <Grid Visibility="{Binding IsRoundInProgress, Converter={StaticResource BoolToVis}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="200"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -65,7 +64,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="10">
+            <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="10,0,0,10">
                 <TextBlock Text="{Binding Player1.Name}" FontSize="18" FontWeight="Bold" Foreground="DodgerBlue"/>
                 <TextBlock FontSize="14">
                     <Run Text="{Binding Strings.TournamentHeaderLives, Mode=OneWay}"/>
@@ -77,7 +76,7 @@
                 </TextBlock>
             </StackPanel>
 
-            <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Margin="10" TextBlock.TextAlignment="Right">
+            <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10,10" TextBlock.TextAlignment="Right">
                 <TextBlock Text="{Binding Player2.Name}" FontSize="18" FontWeight="Bold" Foreground="OrangeRed"/>
                 <TextBlock FontSize="14">
                     <Run Text="{Binding Strings.TournamentHeaderLives, Mode=OneWay}"/>
@@ -89,22 +88,24 @@
                 </TextBlock>
             </StackPanel>
 
-            <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
                        Text="{Binding TimerText}"
                        FontSize="20" FontWeight="Bold"
                        Foreground="Crimson"
-                       HorizontalAlignment="Center"/>
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,0,0,5"/>
 
-            <Image Grid.Row="2" Grid.ColumnSpan="2"
+            <Image Grid.Row="1" Grid.ColumnSpan="2"
                    Source="{Binding GallowsImageSource}"
-                   Height="200" Margin="0,10" Stretch="Uniform"/>
+                   Height="200" Margin="0" Stretch="Uniform"/>
 
-            <TextBlock Grid.Row="3" Grid.ColumnSpan="2"
+            <TextBlock Grid.Row="2" Grid.ColumnSpan="2"
                        Text="{Binding CreakAnimationText}"
                        HorizontalAlignment="Center" FontSize="14"
                        Foreground="DarkGray" FontStyle="Italic" FontFamily="Courier New"/>
 
-            <StackPanel Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center">
+            <StackPanel Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center">
                 <TextBlock HorizontalAlignment="Center" FontSize="16" Opacity="0.8">
                     <Run Text="{Binding ActivePlayerText, Mode=OneWay}"/>
                     <Run Text="{Binding CurrentGuesserName}" FontWeight="Bold"/>
@@ -114,17 +115,18 @@
                            FontWeight="Bold" HorizontalAlignment="Center"/>
             </StackPanel>
 
-            <TextBlock Grid.Row="5" Grid.ColumnSpan="2"
+            <TextBlock Grid.Row="4" Grid.ColumnSpan="2"
                        Text="{Binding UsedLetters}"
                        FontSize="16" Foreground="Gray"
                        HorizontalAlignment="Center" Margin="0,10,0,20"/>
 
-            <ItemsControl Grid.Row="6" Grid.ColumnSpan="2"
+            <ItemsControl Grid.Row="5" Grid.ColumnSpan="2"
                           ItemsSource="{Binding KeyboardLetters}"
-                          VerticalAlignment="Center">
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Rows="3" Columns="10" HorizontalAlignment="Center"></UniformGrid>
+                        <UniformGrid Rows="3" Columns="10" Width="440" HorizontalAlignment="Center"></UniformGrid>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -134,40 +136,21 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Button Grid.Row="7" Grid.ColumnSpan="2"
+            <Button Grid.Row="6" Grid.ColumnSpan="2"
                     Content="{Binding Strings.TournamentButtonCancel}"
                     Command="{Binding BackToMenuCommand}"
-                    HorizontalAlignment="Center" VerticalAlignment="Bottom"
-                    Margin="0,20" Padding="10"/>
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="0,20"
+                    Padding="10"/>
         </Grid>
 
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" 
                     Style="{StaticResource RoundEndPanelStyle}">
-
-            <TextBlock Text="{Binding TournamentStatusMessage}"
-                       FontSize="22" FontWeight="Bold"
-                       TextWrapping="Wrap" HorizontalAlignment="Center"
-                       TextAlignment="Center" MaxWidth="500"/>
-
-            <Button Content="{Binding Strings.TournamentButtonNextRound}"
-                    Command="{Binding NextRoundCommand}"
-                    Margin="0,20" Padding="10"
-                    FontSize="18" FontWeight="Bold"/>
         </StackPanel>
 
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                     Style="{StaticResource TournamentEndPanelStyle}">
-
-            <TextBlock Text="{Binding TournamentEndMessage}"
-                       FontSize="22" FontWeight="Bold"
-                       TextWrapping="Wrap" HorizontalAlignment="Center"
-                       TextAlignment="Center" MaxWidth="500"
-                       LineHeight="30"/>
-
-            <Button Content="{Binding Strings.ButtonBackToMenu}"
-                    Command="{Binding BackToMenuCommand}"
-                    Margin="0,30" Padding="10"
-                    FontSize="16"/>
         </StackPanel>
     </Grid>
 </UserControl>
