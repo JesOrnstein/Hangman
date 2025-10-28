@@ -65,11 +65,11 @@ namespace Hangman.WPF.ViewModels
         {
             if (string.IsNullOrWhiteSpace(CurrentSettings.PlayerName))
             {
-                CurrentSettings.PlayerName = "Spelare 1";
+                CurrentSettings.PlayerName = IsTournamentMode ? Strings.DefaultPlayer1Name : Strings.DefaultPlayerName;
             }
             if (IsTournamentMode && string.IsNullOrWhiteSpace(CurrentSettings.PlayerName2))
             {
-                CurrentSettings.PlayerName2 = "Spelare 2";
+                CurrentSettings.PlayerName2 = Strings.DefaultPlayer2Name;
             }
 
             if (IsTournamentMode)
