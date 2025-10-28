@@ -200,7 +200,7 @@ namespace Hangman.Core.Localizations
 
         // ========== NYA STRÄNGAR FÖR WPF ==========
         public string ButtonBackToMenu => "Tillbaka till Menyn";
-        public string MainMenuWpfTitle => "WPF HANGMAN";
+        public string MainMenuWpfTitle => "WPF HÄNGA GUBBE ";
         public string LanguageSelectorTitle => "Välj språk / Select language";
         public string LanguageButtonSwedish => "Svenska";
         public string LanguageButtonEnglish => "English";
