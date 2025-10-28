@@ -74,19 +74,17 @@ namespace Hangman.Core
             // "opponent" är den som spelade *förra* rundan.
             Player opponent = (CurrentGuesser == Player1) ? Player2 : Player1;
 
-            if (CurrentGuesser!.Lives <= 0)
+            if (opponent.Lives <= 0)
             {
-                // Spelaren vars tur det ÄR har 0 liv.
-                if (opponent.Lives <= 0)
+                // Motståndaren har OCKSÅ 0 liv (båda förlorade sin sista runda).
+                // Nytt: Använd Wins för att avgöra om det är Lost eller Draw
+                if (Player1.Wins != Player2.Wins)
                 {
-                    // Motståndaren har OCKSÅ 0 liv (båda förlorade sin sista runda).
-                    TournamentStatus = GameStatus.Draw;
+                    TournamentStatus = GameStatus.Lost;
                 }
                 else
                 {
-                    // CurrentGuesser har 0 liv, men motståndaren har > 0.
-                    // CurrentGuesser förlorar, motståndaren vinner.
-                    TournamentStatus = GameStatus.Lost; // CurrentGuesser förlorade
+                    TournamentStatus = GameStatus.Draw;
                 }
             }
             // OBS: Vi kollar INTE "else if (opponent.Lives <= 0)"
@@ -167,6 +165,23 @@ namespace Hangman.Core
             {
                 return Player2;
             }
+
+            // --- NY LOGIK FÖR TIE-BREAKER NÄR BÅDA HAR 0 LIV ---
+            // Denna logik används när TournamentStatus sätts till Draw i StartNewRoundAsync, 
+            // men vi vill att en vinnare ska utses baserat på Wins.
+            if (Player1.Lives <= 0 && Player2.Lives <= 0)
+            {
+                if (Player1.Wins > Player2.Wins)
+                {
+                    return Player1; // P1 vinner på Wins
+                }
+                if (Player2.Wins > Player1.Wins)
+                {
+                    return Player2; // P2 vinner på Wins
+                }
+                // Om Wins är lika, returneras null (Draw)
+            }
+            // --- SLUT PÅ NY LOGIK ---
 
             // Om TournamentStatus är Draw (båda har 0 liv) -> return null.
             // Om TournamentStatus är InProgress -> return null.

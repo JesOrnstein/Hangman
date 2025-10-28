@@ -124,8 +124,7 @@ namespace Hangman.Core.Localizations
         public string FeedbackTournamentEnded => "\n--- TURNERING AVSLUTAD ---";
         public string FeedbackTournamentDraw => "OAVGJORT! Båda spelarna förlorade alla sina liv.";
         public string FeedbackTournamentWinner(string winnerName) => $"GRATTIS, {winnerName} VANN TURNERINGEN!";
-        public string FeedbackTournamentLoser(string loserName) => $"{loserName} förlorade alla sina liv. Vunna rundor:";
-        public string FeedbackTournamentFinalWins => "Vunna rundor:";
+        public string FeedbackTournamentLoser(string loserName) => $"{loserName} förlorade alla sina liv."; public string FeedbackTournamentFinalWins => "Vunna rundor:";
         public string FeedbackTournamentPlayerWins(string playerName, int wins) => $"- {playerName}: {wins} rundor";
         public string FeedbackTournamentUnexpectedEnd => "\nTurneringen avslutad (Oväntat slut).";
 
