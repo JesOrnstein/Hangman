@@ -260,16 +260,21 @@ namespace Hangman.WPF.ViewModels
             IsRoundInProgress = false;
             CreakAnimationText = string.Empty;
 
+            // FIX: Hämta namnet PÅ SPELAREN som GISSADE INNAN turen byts.
+            string playerNameWhoJustPlayed = _tournament.CurrentPlayerName;
+
             _tournament.HandleRoundEnd(status);
 
             if (status == GameStatus.Won)
             {
-                TournamentStatusMessage = $"{CurrentGuesserName} {_strings.RoundWon} {_strings.EndScreenCorrectWord(_game.Secret)}";
+                // Använd det sparade namnet.
+                TournamentStatusMessage = $"{playerNameWhoJustPlayed} {_strings.RoundWon} {_strings.EndScreenCorrectWord(_game.Secret)}";
             }
             else
             {
                 if (string.IsNullOrEmpty(TournamentStatusMessage))
-                    TournamentStatusMessage = $"{CurrentGuesserName} {_strings.RoundLost} {_strings.EndScreenCorrectWord(_game.Secret)}";
+                    // Använd det sparade namnet.
+                    TournamentStatusMessage = $"{playerNameWhoJustPlayed} {_strings.RoundLost} {_strings.EndScreenCorrectWord(_game.Secret)}";
             }
 
             UpdateUiProperties();
