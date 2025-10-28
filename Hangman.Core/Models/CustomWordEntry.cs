@@ -11,27 +11,27 @@ namespace Hangman.Core.Models
 {
     public class CustomWordEntry
     {
-        public int Id { get; set; } // Primärnyckel för databasen
+        public int Id { get; set; }
 
         public required string Word { get; set; }
 
         public required WordDifficulty Difficulty { get; set; }
 
-        public required WordLanguage Language { get; set; } // NYTT: Språk
+        public required WordLanguage Language { get; set; }
 
         [SetsRequiredMembers]
         public CustomWordEntry()
         {
             Word = string.Empty;
             Difficulty = default;
-            Language = default; // NYTT
+            Language = default;
         }
 
         public CustomWordEntry(string word, WordDifficulty difficulty, WordLanguage language)
         {
             Word = word.ToUpperInvariant();
             Difficulty = difficulty;
-            Language = language; // NYTT
+            Language = language;
         }
     }
 }

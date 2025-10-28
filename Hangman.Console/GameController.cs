@@ -5,7 +5,7 @@ using Hangman.Core.Models;
 using Hangman.Core.Providers.Api;
 using Hangman.Core.Providers.Interface;
 using Hangman.Core.Providers.Local;
-using System.Threading; // Inkluderad för CancellationTokenSource
+using System.Threading;
 
 namespace Hangman.Console
 {
@@ -84,11 +84,10 @@ namespace Hangman.Console
                 string? secret = await GetWordFromProviderAsync(provider);
                 if (secret == null)
                 {
-                    roundResult = GameStatus.Lost; // Fel vid hämtning
+                    roundResult = GameStatus.Lost;
                     break;
                 }
 
-                // Anropar metoden som returnerar en tuple
                 var (status, _) = await PlayRoundWithFeedbackAsync(playerName, secret, 0);
                 roundResult = status;
 
@@ -99,17 +98,16 @@ namespace Hangman.Console
 
                     if (!_input.GetYesNo(_strings.PromptContinuePlaying))
                     {
-                        roundResult = GameStatus.Lost; // Spelaren valde att sluta
+                        roundResult = GameStatus.Lost;
                     }
                 }
-                else if (consecutiveWins > 0) // Förlorade men hade vinster
+                else if (consecutiveWins > 0)
                 {
                     _renderer.WaitForKey(_strings.FeedbackPressAnyKeyToSave);
                 }
 
             } while (roundResult == GameStatus.Won);
 
-            // Spara highscore om spelaren vann minst en runda
             if (consecutiveWins > 0)
             {
                 var newScore = new HighscoreEntry(playerName, consecutiveWins, currentDifficulty.Value)
@@ -172,14 +170,13 @@ namespace Hangman.Console
                 {
                     break;
                 }
-                catch (Exception ex) // Övriga fel
+                catch (Exception ex)
                 {
                     _renderer.ShowError(_strings.ErrorCouldNotFetchTournamentWord(ex.Message));
                     _renderer.WaitForKey(_strings.CommonPressAnyKeyToContinue);
                     return;
                 }
 
-                // Anropar metoden som returnerar en tuple
                 var (roundResult, feedback) = await PlayRoundWithFeedbackAsync(currentGuesser.Name, secret, currentGuesser.Lives);
                 roundFeedback = feedback;
 
@@ -204,7 +201,6 @@ namespace Hangman.Console
                 }
             }
 
-            // Visa slutresultat (om turneringen inte avbröts)
             if (roundFeedback != _strings.RoundFeedbackCancelled)
             {
                 ShowTournamentResult(tournament);
@@ -226,15 +222,12 @@ namespace Hangman.Console
             _renderer.Clear();
             _renderer.ShowFeedback(_strings.RoundTitleNewRound, ConsoleColor.Cyan);
 
-            // KORRIGERING: Rita skärmen *före* timern startar för att undvika race condition
+            // Rita skärmen *före* timern startar för att undvika race condition
             _renderer.DrawGameScreen(game, playerGuessing, currentLives, feedbackMessage);
-            feedbackMessage = string.Empty; // Nollställ feedback *efter* första ritningen
 
-            // 1. Skapa en CancellationTokenSource som avbryts efter 60 sekunder
             var roundCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             var startTime = DateTime.UtcNow;
 
-            // 2. Starta en parallell task (Task.Run) för att visa nedräkning OCH animation
             var timerTask = Task.Run(async () =>
             {
                 try
@@ -245,10 +238,10 @@ namespace Hangman.Console
                         var remaining = (int)(60 - elapsed.TotalSeconds);
                         if (remaining < 0) remaining = 0;
 
-                        _renderer.DrawTimer(remaining); // Rita tiden
-                        _renderer.DrawAnimation(remaining); // Rita animation
+                        _renderer.DrawTimer(remaining);
+                        _renderer.DrawAnimation(remaining);
 
-                        await Task.Delay(1000, roundCts.Token); // Vänta 1 sekund
+                        await Task.Delay(1000, roundCts.Token);
                     }
                 }
                 catch (TaskCanceledException)
@@ -264,21 +257,20 @@ namespace Hangman.Console
                 {
                     try
                     {
-                        // 1. Vänta på gissning (skärmen är redan ritad)
                         char guess = await _input.GetGuess(game.UsedLetters, roundCts.Token);
 
-                        if (guess == '\0') // Escape (användaravbrott)
+                        if (guess == '\0') // Escape
                         {
                             game.ForceLose();
                             feedbackMessage = _strings.RoundFeedbackCancelled;
                             continue;
                         }
 
-                        if (guess == (char)1) // Ogiltig gissning (från ConsoleInput)
+                        if (guess == (char)1) // Ogiltig gissning
                         {
-                            // Inget feedback-meddelande, GetGuess skrev redan
+                            // GetGuess skrev redan ut felmeddelande
                         }
-                        else // Giltig gissning
+                        else
                         {
                             bool wasCorrect = game.Guess(guess);
                             feedbackMessage = wasCorrect ?
@@ -293,18 +285,15 @@ namespace Hangman.Console
                         feedbackMessage = _strings.RoundTimerExpired;
                     }
 
-                    // 2. Rita om skärmen MED resultatet (om spelet inte är slut)
                     if (game.Status == GameStatus.InProgress)
                     {
                         _renderer.DrawGameScreen(game, playerGuessing, currentLives, feedbackMessage);
-                        feedbackMessage = string.Empty; // Nollställ för nästa gissning
+                        feedbackMessage = string.Empty;
                     }
                 }
             }
             finally
             {
-                // Städa upp oavsett hur loopen avslutades
-
                 if (!roundCts.Token.IsCancellationRequested)
                 {
                     roundCts.Cancel();
@@ -319,13 +308,11 @@ namespace Hangman.Console
 
             _renderer.ShowEndScreen(game, feedbackMessage);
 
-            // Skriv ut vem som vann/förlorade
             if (game.Status == GameStatus.Lost && feedbackMessage != _strings.RoundFeedbackCancelled)
                 _renderer.ShowFeedback($"{playerGuessing} {_strings.RoundLost}", ConsoleColor.Red);
             else if (game.Status == GameStatus.Won)
                 _renderer.ShowFeedback($"{playerGuessing} {_strings.RoundWon}", ConsoleColor.Green);
 
-            // Returnera tuplen
             return (game.Status, feedbackMessage);
         }
 
@@ -362,7 +349,7 @@ namespace Hangman.Console
             while (string.IsNullOrWhiteSpace(word) || !word.All(char.IsLetter))
             {
                 word = _input.GetInputString(_strings.AddWordPrompt);
-                if (word == null) return; // Avbröt
+                if (word == null) return;
 
                 if (string.IsNullOrWhiteSpace(word) || !word.All(char.IsLetter))
                     _renderer.ShowFeedback(_strings.AddWordInvalid, ConsoleColor.Yellow);
@@ -372,7 +359,7 @@ namespace Hangman.Console
             WordDifficulty difficulty = GetDifficultyByLength(word);
 
             WordLanguage? language = _input.SelectLanguage();
-            if (language == null) return; // Avbröt
+            if (language == null) return;
 
             try
             {
@@ -391,8 +378,6 @@ namespace Hangman.Console
 
             _renderer.WaitForKey(_strings.CommonPressAnyKeyToContinue);
         }
-
-        // --- Privata hjälpmetoder för flödeskontroll ---
 
         private WordDifficulty GetDifficultyByLength(string word)
         {

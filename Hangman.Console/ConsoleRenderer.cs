@@ -12,10 +12,8 @@ namespace Hangman.Console
     {
         private readonly IUiStrings _strings;
 
-        // Visualisering av galgen (ASCII-konst)
         private static readonly string[] HangmanStages =
         {
-            // 0-6 fel
             "\n    +---+\n    |   |\n        |\n        |\n        |\n        |\n    =======",
             "\n    +---+\n    |   |\n    O   |\n        |\n        |\n        |\n    =======",
             "\n    +---+\n    |   |\n    O   |\n    |   |\n        |\n        |\n    =======",
@@ -25,31 +23,28 @@ namespace Hangman.Console
             "\n    +---+\n    |   |\n    O   |\n   /|\\  |\n   / \\  |\n        |\n    ======="
         };
 
-        // NYTT: Fast position för timern (kolumn 50, rad 1)
         private const int TimerLeftPos = 50;
         private const int TimerTopPos = 1;
 
-        // NYTT: Fast position för animation (under galgen)
         private const int AnimLeftPos = 4;
-        private const int AnimTopPos = 10; // Galgen är ~7 rader hög, så 10 är under
+        private const int AnimTopPos = 10; // Under galgen
 
-        // NYTT: Definierar animationsramarna
         private static readonly string[] _animFrames =
         {
-            "*creak...* ", // Frame 0
-            " *creak...* ", // Frame 1
-            "  *creak...* ", // Frame 2
-            "   *creak...* ", // Frame 3
-            "    *creak...* ", // Frame 4
-            "     *creak...*", // Frame 5
-            "    *creak...* ", // Frame 6
-            "   *creak...* ", // Frame 7
-            "  *creak...* ", // Frame 8
-            " *creak...* ", // Frame 9
-            "*creak...* ", // Frame 10
-            "               "  // Frame 11 (paus)
+            "*creak...* ",
+            " *creak...* ",
+            "  *creak...* ",
+            "   *creak...* ",
+            "    *creak...* ",
+            "     *creak...*",
+            "    *creak...* ",
+            "   *creak...* ",
+            "  *creak...* ",
+            " *creak...* ",
+            "*creak...* ",
+            "               "
         };
-        private const int AnimFrameCount = 12; // 0-11
+        private const int AnimFrameCount = 12;
 
         public ConsoleRenderer(IUiStrings strings)
         {
@@ -136,7 +131,7 @@ namespace Hangman.Console
                 System.Console.ResetColor();
             }
 
-            // NYTT: Skriv ut gissningsprompten här istället för i ConsoleInput
+            // Skriv ut gissningsprompten här istället för i ConsoleInput
             // Detta säkerställer att markören återställs korrekt efter timer-uppdateringar
             System.Console.Write(_strings.GetGuessPrompt);
         }
@@ -254,15 +249,12 @@ namespace Hangman.Console
             System.Console.ReadKey(true);
         }
 
-        // --- NYA METODER FÖR TIMER & ANIMATION ---
-
         /// <summary>
         /// Ritar timer-displayen på en fast position.
         /// Används av den parallella timer-tasken.
         /// </summary>
         public void DrawTimer(int secondsLeft)
         {
-            // Spara nuvarande markörposition
             int originalLeft = System.Console.CursorLeft;
             int originalTop = System.Console.CursorTop;
 
@@ -271,7 +263,6 @@ namespace Hangman.Console
             System.Console.Write(_strings.RoundTimerDisplay(secondsLeft));
             System.Console.ResetColor();
 
-            // Återställ markören
             System.Console.SetCursorPosition(originalLeft, originalTop);
         }
 
@@ -284,37 +275,33 @@ namespace Hangman.Console
             int originalTop = System.Console.CursorTop;
 
             System.Console.SetCursorPosition(TimerLeftPos, TimerTopPos);
-            // Skriv över med blanksteg
             System.Console.Write(new string(' ', _strings.RoundTimerDisplay(99).Length));
 
             System.Console.SetCursorPosition(originalLeft, originalTop);
         }
 
         /// <summary>
-        /// NY METOD: Ritar den parallella "hänggubbe-animationen" (knarrande).
+        /// Ritar den parallella "hänggubbe-animationen" (knarrande).
         /// Används av den parallella timer-tasken.
         /// </summary>
         public void DrawAnimation(int secondsLeft)
         {
-            // Välj en frame baserat på sekunden (modulo AnimFrameCount)
             int frame = secondsLeft % AnimFrameCount;
             string text = _animFrames[frame];
 
-            // Spara nuvarande markörposition
             int originalLeft = System.Console.CursorLeft;
             int originalTop = System.Console.CursorTop;
 
             System.Console.SetCursorPosition(AnimLeftPos, AnimTopPos);
-            System.Console.ForegroundColor = ConsoleColor.DarkGray; // Mörkgrå färg
+            System.Console.ForegroundColor = ConsoleColor.DarkGray;
             System.Console.Write(text);
             System.Console.ResetColor();
 
-            // Återställ markören
             System.Console.SetCursorPosition(originalLeft, originalTop);
         }
 
         /// <summary>
-        /// NY METOD: Rensar animations-displayen när rundan är över.
+        /// Rensar animations-displayen när rundan är över.
         /// </summary>
         public void ClearAnimationArea()
         {
@@ -322,7 +309,6 @@ namespace Hangman.Console
             int originalTop = System.Console.CursorTop;
 
             System.Console.SetCursorPosition(AnimLeftPos, AnimTopPos);
-            // Skriv över med blanksteg (baserat på längsta frame)
             System.Console.Write(new string(' ', _animFrames[0].Length));
 
             System.Console.SetCursorPosition(originalLeft, originalTop);

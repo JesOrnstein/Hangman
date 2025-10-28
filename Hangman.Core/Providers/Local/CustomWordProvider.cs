@@ -13,22 +13,20 @@ namespace Hangman.Core.Providers.Local
 {
     /// <summary>
     /// Hämtar och sparar anpassade ord till SQLite-databasen.
-    /// Använder HangmanDbContext.
     /// </summary>
     public sealed class CustomWordProvider : IAsyncWordProvider
     {
 
         private readonly Random _rng = new Random();
         private readonly WordDifficulty _difficulty;
-        private readonly WordLanguage _language; // NYTT
+        private readonly WordLanguage _language;
 
         public CustomWordProvider(WordDifficulty difficulty, WordLanguage language)
         {
             _difficulty = difficulty;
-            _language = language; // NYTT
+            _language = language;
         }
 
-        // NYTT: Visar nu även språk
         public string DifficultyName => $"Anpassad Ordlista ({_language} - {_difficulty})";
 
         /// <summary>
@@ -37,27 +35,23 @@ namespace Hangman.Core.Providers.Local
         public async Task AddWordAsync(string word, WordDifficulty difficulty, WordLanguage language)
         {
             if (string.IsNullOrWhiteSpace(word))
-                // ÄNDRAD: Generiskt meddelande för loggning/intern användning
                 throw new ArgumentException("Word cannot be null or whitespace.", nameof(word));
 
-            // Skapa posten. Konstruktorn gör ordet till VERSALER.
             var newEntry = new CustomWordEntry(word, difficulty, language)
             {
                 Word = word,
                 Difficulty = difficulty,
-                Language = language // NYTT
+                Language = language
             };
 
             using (var context = new HangmanDbContext())
             {
-                // Vi kollar här för att ge ett bättre felmeddelande än DbUpdateException
-                // NYTT: Kollar även 'Language'
+                // Kollar unicitet (Word, Difficulty, Language)
                 if (await context.CustomWords.AnyAsync(e =>
                     e.Word == newEntry.Word &&
                     e.Difficulty == newEntry.Difficulty &&
                     e.Language == newEntry.Language))
                 {
-                    // ÄNDRAD: Kasta ditt nya, specifika undantag med data
                     throw new WordAlreadyExistsException(newEntry.Word, newEntry.Difficulty, newEntry.Language);
                 }
 
@@ -70,20 +64,17 @@ namespace Hangman.Core.Providers.Local
         {
             List<string> availableWords;
 
-            // Hämta från databasen istället för JSON-fil
             using (var context = new HangmanDbContext())
             {
-                // Filtrera på vald svårighetsgrad OCH SPRÅK i databasfrågan
                 availableWords = await context.CustomWords
-                    .AsNoTracking() // Vi behöver inte spåra ändringar här
-                    .Where(w => w.Difficulty == _difficulty && w.Language == _language) // MODIFIERAD
+                    .AsNoTracking()
+                    .Where(w => w.Difficulty == _difficulty && w.Language == _language)
                     .Select(w => w.Word)
                     .ToListAsync(ct);
             }
 
             if (!availableWords.Any())
             {
-                // ÄNDRAD: Kasta ditt andra nya, specifika undantag med data
                 throw new NoCustomWordsFoundException(_difficulty, _language);
             }
 

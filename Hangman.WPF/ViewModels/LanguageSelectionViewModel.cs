@@ -1,6 +1,4 @@
-﻿// Ny fil: Hangman.WPF/ViewModels/LanguageSelectionViewModel.cs
-
-using Hangman.Core.Localizations;
+﻿using Hangman.Core.Localizations;
 using System.Windows.Input;
 
 namespace Hangman.WPF.ViewModels
@@ -10,7 +8,6 @@ namespace Hangman.WPF.ViewModels
         private readonly MainViewModel _mainViewModel;
         private readonly LocalizationProvider _strings;
 
-        // Exponera strängarna så att XAML kan binda till titeln (om vi vill)
         public LocalizationProvider Strings { get; }
 
         public ICommand SelectSwedishCommand { get; }
@@ -20,7 +17,7 @@ namespace Hangman.WPF.ViewModels
         {
             _mainViewModel = mainViewModel;
             _strings = strings;
-            Strings = strings; // Exponera för XAML
+            Strings = strings;
 
             SelectSwedishCommand = new RelayCommand(SelectSwedish);
             SelectEnglishCommand = new RelayCommand(SelectEnglish);
@@ -28,19 +25,13 @@ namespace Hangman.WPF.ViewModels
 
         private void SelectSwedish(object? _)
         {
-            // 1. Sätt språkstrategin till Svenska
             _strings.SetStrategy(new SwedishUiStrings());
-
-            // 2. Navigera till huvudmenyn
             _mainViewModel.NavigateToMenu();
         }
 
         private void SelectEnglish(object? _)
         {
-            // 1. Sätt språkstrategin till Engelska
             _strings.SetStrategy(new EnglishUiStrings());
-
-            // 2. Navigera till huvudmenyn
             _mainViewModel.NavigateToMenu();
         }
     }

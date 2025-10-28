@@ -36,7 +36,6 @@ namespace Hangman.WPF.ViewModels
         private string _currentGuesserName = "";
         public string CurrentGuesserName { get => _currentGuesserName; set { _currentGuesserName = value; OnPropertyChanged(); } }
 
-        // "Aktiv spelare" utan kolon – bindas i XAML via Run
         public string ActivePlayerText => _strings.RoundActivePlayer.Replace(":", "");
 
         private string _tournamentStatusMessage = "";
@@ -48,7 +47,6 @@ namespace Hangman.WPF.ViewModels
         private string _usedLetters = "";
         public string UsedLetters { get => _usedLetters; set { _usedLetters = value; OnPropertyChanged(); } }
 
-        // Använd pack-URI så resurser alltid hittas
         private string _gallowsImageSource = Pack("/Images/stage_0.png");
         public string GallowsImageSource { get => _gallowsImageSource; set { _gallowsImageSource = value; OnPropertyChanged(); } }
 
@@ -68,7 +66,6 @@ namespace Hangman.WPF.ViewModels
             {
                 _isRoundInProgress = value;
                 OnPropertyChanged();
-                // Om din RelayCommand har RaiseCanExecuteChanged – trigga om knapparna
                 if (GuessCommand is RelayCommand rc) rc.RaiseCanExecuteChanged();
             }
         }
@@ -100,7 +97,6 @@ namespace Hangman.WPF.ViewModels
             _game.GameEnded += OnRoundEnded;
 
             GuessCommand = new RelayCommand(MakeGuess, CanGuess);
-            // ÄNDRAD: Anropar ExitTournament-metoden
             BackToMenuCommand = new RelayCommand(_ => ExitTournament());
             NextRoundCommand = new RelayCommand(async _ => await StartNewRound());
 
@@ -109,11 +105,9 @@ namespace Hangman.WPF.ViewModels
 
             MaskedWord = _strings.FeedbackFetchingWord("...");
 
-            // VIKTIGT: starta rundan asynkront på UI-tråden, inte Task.Run
             _ = StartNewRound();
         }
 
-        // --- NY METOD: Rensa events för att undvika minnesläckor ---
         private void CleanupEvents()
         {
             _timer.Stop();
@@ -126,15 +120,12 @@ namespace Hangman.WPF.ViewModels
                 _game.GameEnded -= OnRoundEnded;
             }
         }
-        // -----------------------------------------------------------
 
-        // --- NY METOD: Hanterar avslutning och navigering ---
         private void ExitTournament()
         {
             CleanupEvents();
             _mainViewModel.NavigateToMenu();
         }
-        // -----------------------------------------------------
 
         private async Task StartNewRound()
         {
@@ -152,7 +143,7 @@ namespace Hangman.WPF.ViewModels
 
             try
             {
-                string word = await _tournament.StartNewRoundAsync(); // återupptas på UI-tråd
+                string word = await _tournament.StartNewRoundAsync();
                 _game.StartNew(word);
             }
             catch (NoCustomWordsFoundException ex)
@@ -163,7 +154,7 @@ namespace Hangman.WPF.ViewModels
                         _strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language),
                         _strings.SelectWordSourceTitle);
                 });
-                CleanupEvents(); // Rensa events innan navigering
+                CleanupEvents();
                 _mainViewModel.NavigateToMenu();
                 return;
             }
@@ -193,7 +184,6 @@ namespace Hangman.WPF.ViewModels
             IsTournamentInProgress = false;
             IsRoundInProgress = false;
 
-            // ÄNDRAD: Rensa events här också, ifall turneringen avslutas naturligt (utan ExitTournament)
             CleanupEvents();
 
             CreakAnimationText = string.Empty;
@@ -285,7 +275,6 @@ namespace Hangman.WPF.ViewModels
         }
 
         private static string Pack(string relative) =>
-            // Byt "Hangman.WPF" om ditt WPF-assembly heter något annat
             $"pack://application:,,,/Hangman.WPF;component{relative}";
     }
 }

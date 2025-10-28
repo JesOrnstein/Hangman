@@ -3,8 +3,9 @@ using Hangman.Core.Providers.Interface;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Hangman.Core.Localizations; // <-- NY USING
-using System.Linq; // <-- NY USING
+using Hangman.Core.Localizations;
+using System.Linq;
+using System.Windows;
 
 namespace Hangman.WPF.ViewModels
 {
@@ -12,29 +13,27 @@ namespace Hangman.WPF.ViewModels
     {
         private readonly MainViewModel _mainViewModel;
         private readonly IStatisticsService _statisticsService;
-        private readonly LocalizationProvider _strings; // <-- NYTT FÄLT
+        private readonly LocalizationProvider _strings;
 
-        // NY PROPERTY: Exponera strängarna för XAML
         public LocalizationProvider Strings { get; }
 
         public ObservableCollection<HighscoreEntry> Highscores { get; } = new ObservableCollection<HighscoreEntry>();
 
-        private string _statusMessage = ""; // Tom från start
+        private string _statusMessage = "";
         public string StatusMessage { get => _statusMessage; set { _statusMessage = value; OnPropertyChanged(); } }
 
         public ICommand BackToMenuCommand { get; }
 
-        // UPPDATERAD KONSTRUKTOR
         public HighscoreViewModel(MainViewModel mainViewModel, IStatisticsService statisticsService, LocalizationProvider strings)
         {
             _mainViewModel = mainViewModel;
             _statisticsService = statisticsService;
-            _strings = strings; // Spara för C#-logik
-            Strings = strings;  // Exponera för XAML
+            _strings = strings;
+            Strings = strings;
 
             BackToMenuCommand = new RelayCommand(_ => _mainViewModel.NavigateToMenu());
 
-            StatusMessage = _strings.HighscoreStatusLoading; // Sätt laddningsmeddelande
+            StatusMessage = _strings.HighscoreStatusLoading;
             Task.Run(LoadHighscores);
         }
 
@@ -44,7 +43,7 @@ namespace Hangman.WPF.ViewModels
             {
                 var scores = await _statisticsService.GetGlobalTopScoresAsync(10);
 
-                App.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.Invoke(() =>
                 {
                     Highscores.Clear();
                     if (scores.Any())
@@ -53,17 +52,17 @@ namespace Hangman.WPF.ViewModels
                         {
                             Highscores.Add(score);
                         }
-                        StatusMessage = string.Empty; // Rensa status om vi hittade
+                        StatusMessage = string.Empty;
                     }
                     else
                     {
-                        StatusMessage = _strings.HighscoreStatusNoneFoundWpf; // ÄNDRAD
+                        StatusMessage = _strings.HighscoreStatusNoneFoundWpf;
                     }
                 });
             }
             catch (System.Exception ex)
             {
-                StatusMessage = _strings.HighscoreStatusError(ex.Message); // ÄNDRAD
+                StatusMessage = _strings.HighscoreStatusError(ex.Message);
             }
         }
     }

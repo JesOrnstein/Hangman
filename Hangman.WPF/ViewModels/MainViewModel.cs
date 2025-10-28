@@ -40,8 +40,7 @@ namespace Hangman.WPF.ViewModels
 
         public void NavigateToHighscores()
         {
-            // HighscoreViewModel behöver nu 'Strings' för statusmeddelanden
-            CurrentViewModel = new HighscoreViewModel(this, _statisticsService, Strings); // ÄNDRAD
+            CurrentViewModel = new HighscoreViewModel(this, _statisticsService, Strings);
         }
 
         public void NavigateToAddWord()

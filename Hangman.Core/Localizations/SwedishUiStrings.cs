@@ -10,6 +10,7 @@ namespace Hangman.Core.Localizations
     public class SwedishUiStrings : IUiStrings
     {
         // Välkomstskärm
+        // ... (ASCII ART)
         public string WelcomeTitleArt => @"´      
       _   _   _ _ _   _    _   ____     _            ____   _   _   ____   ____   ____   ___________.._______
      | | | |   / \    | \ | | / ___|   / \          / ___| | | | | | __ \ | __ \ | ___| | .__________))______|
@@ -39,6 +40,7 @@ namespace Hangman.Core.Localizations
         public string WelcomePressAnyKey => "     Tryck valfri tangent för att starta...";
 
         // Huvudmeny
+        // ... (ASCII ART)
         public string MainMenuTitleArt => @"
       _   _   _ _ _   _    _   ____     _            ____   _   _   ____   ____   ____ 
      | | | |   / \    | \ | | / ___|   / \          / ___| | | | | | __ \ | __ \ | ___|
@@ -72,13 +74,13 @@ namespace Hangman.Core.Localizations
         public string SelectWordSourceTitle => "--- VÄLJ ORDLISTA ---";
         public string SelectWordSourceApi => "1. Engelska (API - olika längd)";
         public string SelectWordSourceLocal => "2. Svenska (Lokal lista)";
-        public string SelectWordSourceCustomSwedish => "3. Anpassad Ordlista (Svenska)"; // ÄNDRAD
-        public string SelectWordSourceCustomEnglish => "4. Anpassad Ordlista (Engelska)"; // NY
-        public string SelectWordSourcePrompt => "\nVälj (1-4): "; // ÄNDRAD
+        public string SelectWordSourceCustomSwedish => "3. Anpassad Ordlista (Svenska)";
+        public string SelectWordSourceCustomEnglish => "4. Anpassad Ordlista (Engelska)";
+        public string SelectWordSourcePrompt => "\nVälj (1-4): ";
         public string FeedbackWordSourceApi => "Engelska (API)";
         public string FeedbackWordSourceLocal => "Svenska (Lokal)";
-        public string FeedbackWordSourceCustomSwedish => "Anpassad Ordlista (Svenska)"; // ÄNDRAD
-        public string FeedbackWordSourceCustomEnglish => "Anpassad Ordlista (Engelska)"; // NY
+        public string FeedbackWordSourceCustomSwedish => "Anpassad Ordlista (Svenska)";
+        public string FeedbackWordSourceCustomEnglish => "Anpassad Ordlista (Engelska)";
 
         // Val av svårighetsgrad
         public string SelectDifficultyTitle(string source) => $"--- VÄLJ SVÅRIGHETSGRAD ({source}) ---";
@@ -139,12 +141,12 @@ namespace Hangman.Core.Localizations
         public string AddWordTitle => "--- LÄGG TILL NYTT ORD ---";
         public string AddWordPrompt => "Ange ordet (A-Ö): ";
         public string AddWordInvalid => "\nOgiltigt ord. Ange endast bokstäver.";
-        public string AddWordSuccess(string word, WordDifficulty difficulty, WordLanguage language) => $"\nOrdet '{word}' har lagts till i den anpassade listan ({language} - {difficulty})!"; // ÄNDRAD
+        public string AddWordSuccess(string word, WordDifficulty difficulty, WordLanguage language) => $"\nOrdet '{word}' har lagts till i den anpassade listan ({language} - {difficulty})!";
         public string AddWordErrorExists(string message) => $"\nKunde inte lägga till ordet: {message}";
-        public string AddWordSelectLanguageTitle => "--- VÄLJ SPRÅK FÖR ORDET ---"; // NY
-        public string AddWordSelectLanguagePrompt => "\nVälj språk (1-2): "; // NY
-        public string AddWordLanguageSwedish => "1. Svenska"; // NY
-        public string AddWordLanguageEnglish => "2. Engelska"; // NY
+        public string AddWordSelectLanguageTitle => "--- VÄLJ SPRÅK FÖR ORDET ---";
+        public string AddWordSelectLanguagePrompt => "\nVälj språk (1-2): ";
+        public string AddWordLanguageSwedish => "1. Svenska";
+        public string AddWordLanguageEnglish => "2. Engelska";
 
         // Hjälpskärm
         public string HelpTitle => "--- HJÄLP / HUR MAN SPELAR ---";
@@ -156,7 +158,7 @@ namespace Hangman.Core.Localizations
         public string HelpSourcesTitle => "\nOrdkällor:";
         public string HelpSourcesLine1 => "  API: Engelska ord med längd baserat på svårighetsgrad.";
         public string HelpSourcesLine2 => "  Lokal: Svenska ord från en inbyggd lista.";
-        public string HelpSourcesLine3 => "  Anpassad: Ord som du själv har lagt till (både svenska och engelska)."; // ÄNDRAD
+        public string HelpSourcesLine3 => "  Anpassad: Ord som du själv har lagt till (både svenska och engelska).";
 
         // Spelrunda
         public string RoundTitleNewRound => "--- NY RUNDA STARTAD ---";

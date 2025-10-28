@@ -58,26 +58,20 @@ namespace Hangman.Core
             Player2 = new Player(p2Name, MaxLives);
             _wordProvider = wordProvider;
 
-            // Bestäm slumpmässigt vem som börjar gissa
             CurrentGuesser = (_rng.Next(2) == 0) ? Player1 : Player2;
         }
 
         /// <summary>
         /// Startar en ny spelrunda. Ordet hämtas från den konfigurerade ordkällan.
-        /// (UPPDATERAD MED NY VINST-LOGIK)
         /// </summary>
         /// <returns>Det hemliga ordet.</returns>
         public async Task<string> StartNewRoundAsync()
         {
-            // --- NY LOGIK: Kontrollera turneringsstatus FÖRE RUNDAN STARTAR ---
-            // "CurrentGuesser" är den som *ska* spela nu.
-            // "opponent" är den som spelade *förra* rundan.
             Player opponent = (CurrentGuesser == Player1) ? Player2 : Player1;
 
             if (opponent.Lives <= 0)
             {
-                // Motståndaren har OCKSÅ 0 liv (båda förlorade sin sista runda).
-                // Nytt: Använd Wins för att avgöra om det är Lost eller Draw
+                // Motståndaren har 0 liv. Använd Wins som tie-breaker.
                 if (Player1.Wins != Player2.Wins)
                 {
                     TournamentStatus = GameStatus.Lost;
@@ -87,23 +81,14 @@ namespace Hangman.Core
                     TournamentStatus = GameStatus.Draw;
                 }
             }
-            // OBS: Vi kollar INTE "else if (opponent.Lives <= 0)"
-            // Om motståndaren har 0 liv, men CurrentGuesser har liv,
-            // MÅSTE CurrentGuesser fortfarande spela sin runda (för att ev. vinna och återställa liv).
-            // Om de misslyckas, får de 0 liv, och nästa runda blir Draw.
-            // --- SLUT PÅ NY LOGIK ---
-
 
             if (TournamentStatus != GameStatus.InProgress)
             {
-                // Signalera till UI att spelet är slut och inget ord kan hämtas.
                 throw new InvalidOperationException("Turneringen är avslutad.");
             }
 
-            // Hämta ordet asynkront (Gammal logik)
             string secret = await _wordProvider.GetWordAsync();
 
-            // Skapa en ny Game-instans med 6 maxfel
             CurrentRound = new Game(6);
             CurrentRound.StartNew(secret);
 
@@ -112,7 +97,6 @@ namespace Hangman.Core
 
         /// <summary>
         /// Hanterar resultatet av den nyss avslutade rundan och uppdaterar spelarnas liv och turordning.
-        /// (FÖRENKLAD)
         /// </summary>
         /// <param name="roundResult">Resultatet av rundan (Won eller Lost).</param>
         public void HandleRoundEnd(GameStatus roundResult)
@@ -122,40 +106,28 @@ namespace Hangman.Core
                 throw new InvalidOperationException("Kan inte hantera runda. Ingen aktiv gissare.");
             }
 
-            // Spelaren som gissade
             Player guessingPlayer = CurrentGuesser;
 
             // 1. Hantera Liv och Wins
             if (roundResult == GameStatus.Won)
             {
-                // Vinnaren får en vinst och återställer liv till max.
                 guessingPlayer.Wins++;
                 guessingPlayer.Lives = MaxLives;
             }
             else // Lost
             {
-                // Förloraren (den som gissade) förlorar ett liv.
                 guessingPlayer.Lives--;
             }
 
-            // 2. Kontrollera Vinstvillkor (Turneringen Slut)
-            // === DENNA LOGIK ÄR BORTTAGEN HÄRIFRÅN ===
-            // (Den ligger nu i StartNewRoundAsync)
-
-
-            // 3. Byt Gissare (alltid, oavsett status)
+            // 2. Byt Gissare
             CurrentGuesser = (CurrentGuesser == Player1) ? Player2 : Player1;
         }
 
         /// <summary>
         /// Returnerar den spelare som vann turneringen, eller null om den fortfarande pågår eller blev oavgjord.
-        /// (UPPDATERAD LOGIK)
         /// </summary>
         public Player? GetWinner()
         {
-            // Denna anropas bara när TournamentStatus INTE är InProgress eller Draw.
-            // Vinnaren är den som har liv kvar.
-
             if (Player1.Lives > 0 && Player2.Lives <= 0)
             {
                 return Player1;
@@ -166,25 +138,18 @@ namespace Hangman.Core
                 return Player2;
             }
 
-            // --- NY LOGIK FÖR TIE-BREAKER NÄR BÅDA HAR 0 LIV ---
-            // Denna logik används när TournamentStatus sätts till Draw i StartNewRoundAsync, 
-            // men vi vill att en vinnare ska utses baserat på Wins.
+            // Tie-breaker när båda har 0 liv (TournamentStatus = Draw)
             if (Player1.Lives <= 0 && Player2.Lives <= 0)
             {
                 if (Player1.Wins > Player2.Wins)
                 {
-                    return Player1; // P1 vinner på Wins
+                    return Player1;
                 }
                 if (Player2.Wins > Player1.Wins)
                 {
-                    return Player2; // P2 vinner på Wins
+                    return Player2;
                 }
-                // Om Wins är lika, returneras null (Draw)
             }
-            // --- SLUT PÅ NY LOGIK ---
-
-            // Om TournamentStatus är Draw (båda har 0 liv) -> return null.
-            // Om TournamentStatus är InProgress -> return null.
 
             return null;
         }

@@ -9,7 +9,7 @@ namespace Hangman.Core.Models
 {
     public class HighscoreEntry
     {
-        public int Id { get; set; } // Primärnyckel
+        public int Id { get; set; }
 
         public required string PlayerName { get; set; }
         public required int ConsecutiveWins { get; set; }
@@ -23,7 +23,6 @@ namespace Hangman.Core.Models
             Difficulty = default(WordDifficulty);
         }
 
-        // Denna konstruktor används i ConsoleUi.cs och sätter alla required-fält
         public HighscoreEntry(string playerName, int consecutiveWins, WordDifficulty difficulty)
         {
             PlayerName = playerName;

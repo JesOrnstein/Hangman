@@ -9,12 +9,6 @@ using System.Threading;
 using Hangman.Core.Providers.Interface;
 using Hangman.Core.Models;
 
-/*
-  En ordprovider som hämtar ett slumpmässigt ord från ett externt API.
-  Den kan konfigureras med en svårighetsgrad (WordDifficulty)
-  för att hämta ord av olika längd.
-*/
-
 namespace Hangman.Core.Providers.Api
 {
     public sealed class ApiWordProvider : IAsyncWordProvider
@@ -22,59 +16,49 @@ namespace Hangman.Core.Providers.Api
         private static readonly HttpClient _httpClient = new();
         private const string ApiUrl = "https://random-word-api.herokuapp.com/word";
 
-        // Spara svårighetsgraden som valdes när klassen skapades
-        private readonly WordDifficulty _difficulty; 
-
-        // Vi behöver en Random-generator för att välja längd inom ett spann
+        private readonly WordDifficulty _difficulty;
         private readonly Random _rng = new();
 
-        // Konstruktorn tar nu emot en svårighetsgrad
-        public ApiWordProvider(WordDifficulty difficulty) 
+        public ApiWordProvider(WordDifficulty difficulty)
         {
             _difficulty = difficulty;
         }
 
-        // DifficultyName kan nu reflektera det valda läget
         public string DifficultyName => $"API ({_difficulty})";
 
         public async Task<string> GetWordAsync(CancellationToken ct = default)
         {
-            // 1. Bestäm ordlängd baserat på svårighetsgrad
             int minLength, maxLength;
 
             switch (_difficulty)
             {
-                case WordDifficulty.Easy: 
-                    minLength = 3; // 1-2 bokstäver är inte så kul i hänga gubbe
+                case WordDifficulty.Easy:
+                    minLength = 3;
                     maxLength = 4;
                     break;
 
-                case WordDifficulty.Medium: 
+                case WordDifficulty.Medium:
                     minLength = 5;
                     maxLength = 7;
                     break;
 
                 case WordDifficulty.Hard:
                     minLength = 8;
-                    maxLength = 11; // Sätt en övre gräns
+                    maxLength = 11;
                     break;
 
-                default: // Fallback
+                default:
                     minLength = 5;
                     maxLength = 5;
                     break;
             }
 
-            // 2. Välj en slumpmässig längd inom spannet
-            // (Max-värdet i Next() är exklusivt, därav +1)
             int length = _rng.Next(minLength, maxLength + 1);
 
-            // 3. Bygg den nya URL:en med query-parametern
             string requestUrl = $"{ApiUrl}?length={length}";
 
             try
             {
-                // 4. Gör anropet med den nya URL:en
                 var words = await _httpClient.GetFromJsonAsync<string[]>(requestUrl, ct);
 
                 if (words == null || words.Length == 0 || string.IsNullOrWhiteSpace(words[0]))

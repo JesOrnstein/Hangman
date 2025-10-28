@@ -3,31 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-/*
-  ───────────────────────────────────────────────────────────────
-   CLASS: Game
-   Ansvarar för all kärnlogik i spelet Hänga Gubbe.
-
-   Huvuduppgifter:
-   - Starta nytt spel (StartNew)
-   - Hantera gissningar (Guess)
-   - Hålla koll på fel, status och använda bokstäver
-   - Ge maskerat ord (GetMaskedWord)
-   - Skicka ut events till UI (LetterGuessed, WrongLetterGuessed, GameEnded)
-  ───────────────────────────────────────────────────────────────
-*/
-
 namespace Hangman.Core
 {
+    /// <summary>
+    /// Ansvarar för all kärnlogik i spelet Hänga Gubbe.
+    /// </summary>
     public sealed class Game
     {
-        // Hemliga ordet som spelaren försöker lista ut
         private string _secret = string.Empty;
-
-        // Max antal tillåtna fel innan förlust
         private readonly int _maxMistakes;
-
-        // Bokstäver som spelaren redan gissat
         private readonly HashSet<char> _used = new();
 
         public Game(int maxMistakes = 6)
@@ -38,58 +22,44 @@ namespace Hangman.Core
             _maxMistakes = maxMistakes;
         }
 
-        // Spelets nuvarande status: pågående, vunnet eller förlorat
         public GameStatus Status { get; private set; } = GameStatus.InProgress;
-
-        // Antal fel som gjorts hittills
         public int Mistakes { get; private set; } = 0;
-
-        // Hur många försök som återstår
         public int AttemptsLeft => _maxMistakes - Mistakes;
-
-        // Publik read-only vy av använda bokstäver
         public IReadOnlyCollection<char> UsedLetters => _used;
-
-        // Visar vilket ord som används i aktuell runda
         public string Secret => _secret;
 
         // ───── EVENTS ──────────────────────────────────────────────
-        // UI eller testkod kan prenumerera på dessa:
-        public event EventHandler<char>? LetterGuessed;      // När en bokstav gissas rätt
-        public event EventHandler<char>? WrongLetterGuessed; // När en bokstav gissas fel
-        public event EventHandler<GameStatus>? GameEnded;    // När spelet tar slut (vinst/förlust)
+        public event EventHandler<char>? LetterGuessed;
+        public event EventHandler<char>? WrongLetterGuessed;
+        public event EventHandler<GameStatus>? GameEnded;
         // ──────────────────────────────────────────────────────────
 
-        /*
-          Startar en ny spelrunda.
-          Nollställer state, rensar använda bokstäver och ställer in nytt hemligt ord.
-        */
+        /// <summary>
+        /// Startar en ny spelrunda.
+        /// Nollställer state, rensar använda bokstäver och ställer in nytt hemligt ord.
+        /// </summary>
         public void StartNew(string word)
         {
             if (string.IsNullOrWhiteSpace(word))
                 throw new ArgumentException("Secret word cannot be empty", nameof(word));
 
-            _secret = word.ToUpperInvariant();   // Normalisera till versaler
-            Status = GameStatus.InProgress;      // Startläge
-            Mistakes = 0;                        // Nollställ felräknaren
-            _used.Clear();                       // Rensa tidigare gissningar
+            _secret = word.ToUpperInvariant();
+            Status = GameStatus.InProgress;
+            Mistakes = 0;
+            _used.Clear();
         }
 
-        /*
-          Hanterar en bokstavsgissning.
-          Returnerar true om bokstaven finns i ordet, annars false.
-
-          - Ignorerar dubblettgissningar
-          - Uppdaterar Mistakes vid fel gissning
-          - Avslutar spelet vid vinst/förlust
-        */
+        /// <summary>
+        /// Hanterar en bokstavsgissning.
+        /// Returnerar true om bokstaven finns i ordet, annars false.
+        /// </summary>
         public bool Guess(char letter)
         {
-            if (Status != GameStatus.InProgress) return false; // Ignorera om spelet redan är slut
+            if (Status != GameStatus.InProgress) return false;
 
             var c = char.ToUpperInvariant(letter);
 
-            // Om bokstaven redan gissats: returnera bara om den finns i ordet
+            // Ignorera dubblettgissningar
             if (_used.Contains(c))
                 return _secret.Contains(c);
 
@@ -100,7 +70,6 @@ namespace Hangman.Core
             {
                 LetterGuessed?.Invoke(this, c);
 
-                // Kontrollera om alla bokstäver i ordet är gissade ⇒ vinst
                 if (AllRevealed())
                 {
                     Status = GameStatus.Won;
@@ -114,7 +83,6 @@ namespace Hangman.Core
             Mistakes++;
             WrongLetterGuessed?.Invoke(this, c);
 
-            // Förlust om gränsen nås
             if (Mistakes >= _maxMistakes)
             {
                 Status = GameStatus.Lost;
@@ -124,11 +92,9 @@ namespace Hangman.Core
             return false;
         }
 
-        /*
-          Returnerar ordet i maskerat format.
-          - Rätt gissade bokstäver visas
-          - Ej gissade bokstäver ersätts med '_'
-        */
+        /// <summary>
+        /// Returnerar ordet i maskerat format.
+        /// </summary>
         public string GetMaskedWord()
         {
             if (string.IsNullOrEmpty(_secret))
@@ -143,21 +109,18 @@ namespace Hangman.Core
             return new string(chars);
         }
 
-        /*
-          Hjälpmetod: kontrollerar om alla bokstäver i det hemliga ordet är avslöjade.
-          Används för att avgöra vinstvillkoret.
-        */
         private bool AllRevealed()
         {
             var needed = new HashSet<char>(_secret);
-            needed.RemoveWhere(ch => !char.IsLetter(ch)); // ignorera t.ex. mellanslag eller bindestreck
+            // Ignorera icke-bokstäver
+            needed.RemoveWhere(ch => !char.IsLetter(ch));
             return needed.IsSubsetOf(_used);
         }
 
-        /*
-        Tvingar spelet till förlust-läge.
-        Används om spelaren avbryter en runda.
-        */
+        /// <summary>
+        /// Tvingar spelet till förlust-läge.
+        /// Används om spelaren avbryter en runda eller om tiden går ut.
+        /// </summary>
         public void ForceLose()
         {
             if (Status == GameStatus.InProgress)

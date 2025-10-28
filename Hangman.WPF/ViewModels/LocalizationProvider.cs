@@ -4,11 +4,8 @@ using Hangman.Core.Models;
 namespace Hangman.WPF.ViewModels
 {
     /// <summary>
-    /// Denna klass är vår "Context" i Strategy Pattern, anpassad för MVVM.
-    /// Den ärver BaseViewModel för att kunna skicka INotifyPropertyChanged
-    /// när språket byts.
-    /// Den implementerar IUiStrings så att vi kan binda direkt till dess
-    /// egenskaper från XAML.
+    /// Implementation av Strategy Pattern (Context) för lokalisering.
+    /// Arver från BaseViewModel för att stödja uppdatering av UI vid språkbyte.
     /// </summary>
     public class LocalizationProvider : BaseViewModel, IUiStrings
     {
@@ -27,17 +24,12 @@ namespace Hangman.WPF.ViewModels
         {
             _currentStrategy = newStrategy;
 
-            // Anropar OnPropertyChanged med 'null' (eller string.Empty) 
-            // för att signalera att ALLA properties på detta objekt 
-            // har ändrats. Detta tvingar hela UI:t att ladda om alla strängar.
+            // Anropar OnPropertyChanged(null) för att tvinga hela UI:t att ladda om alla strängar.
             OnPropertyChanged(null);
         }
 
         // --- IMPLEMENTATION AV IUiStrings ---
-        // Alla egenskaper och metoder nedan delegerar helt enkelt
-        // anropet till den _currentStrategy som är aktiv för tillfället.
-        // När SetStrategy() anropas, kommer alla dessa att returnera
-        // de nya strängarna automatiskt.
+        // Alla egenskaper och metoder delegerar anropet till den _currentStrategy som är aktiv för tillfället.
 
         #region Välkomstskärm
         public string WelcomeTitleArt => _currentStrategy.WelcomeTitleArt;
@@ -192,10 +184,6 @@ namespace Hangman.WPF.ViewModels
         public string RoundTimerDisplay(int seconds) => _currentStrategy.RoundTimerDisplay(seconds);
         public string RoundTimerExpired => _currentStrategy.RoundTimerExpired;
         #endregion
-
-        // ==================================================================
-        // === ALLA SAKNADE PROPERTIES SOM ORSAKADE FELEN ÄR TILLAGDA HÄR ===
-        // ==================================================================
 
         #region WPF-Specifika Strängar
         public string ButtonBackToMenu => _currentStrategy.ButtonBackToMenu;

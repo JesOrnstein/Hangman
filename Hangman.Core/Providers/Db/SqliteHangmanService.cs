@@ -15,7 +15,6 @@ namespace Hangman.Core.Providers.Db
     /// </summary>
     public class SqliteHangmanService : IStatisticsService
     {
-        // Skapa en ny kontext-instans vid varje operation (bra för webb/konsolapplikationer utan DI)
         private HangmanDbContext CreateContext() => new HangmanDbContext();
 
         public async Task SaveHighscoreAsync(HighscoreEntry newScore)
@@ -24,20 +23,17 @@ namespace Hangman.Core.Providers.Db
 
             using (var context = CreateContext())
             {
-                // FIX: Ändrat från .Equals(..., StringComparison.OrdinalIgnoreCase) till .ToLower() == .ToLower()
-                // Detta kan översättas till SQL, vilket löser felet.
                 var existingScore = await context.Highscores.FirstOrDefaultAsync(s =>
                     s.PlayerName.ToLower() == newScore.PlayerName.ToLower() &&
                     s.Difficulty == newScore.Difficulty);
 
-                bool saved = false; // Håll koll på om vi faktiskt sparade något
+                bool saved = false;
 
                 if (existingScore != null)
                 {
                     if (newScore.ConsecutiveWins > existingScore.ConsecutiveWins)
                     {
                         existingScore.ConsecutiveWins = newScore.ConsecutiveWins;
-                        // Nollställ ID för att säkerställa att vi inte försöker lägga till en ny post med samma ID
                         newScore.Id = existingScore.Id;
                         context.Highscores.Update(existingScore);
                         await context.SaveChangesAsync();
@@ -46,13 +42,11 @@ namespace Hangman.Core.Providers.Db
                 }
                 else
                 {
-                    // NY: Lägg till den nya posten
                     context.Highscores.Add(newScore);
                     await context.SaveChangesAsync();
                     saved = true;
                 }
 
-                // NYTT: Rensa listan om vi har lagt till/uppdaterat något
                 if (saved)
                 {
                     await PruneScoresAsync(context, newScore.Difficulty, 10);
@@ -61,21 +55,18 @@ namespace Hangman.Core.Providers.Db
         }
 
         /// <summary>
-        /// NY PRIVAT HJÄLPMETOD: Ser till att endast de X bästa poängen
+        /// Ser till att endast de X bästa poängen
         /// för en given svårighetsgrad finns kvar i databasen.
         /// </summary>
         private async Task PruneScoresAsync(HangmanDbContext context, WordDifficulty difficulty, int topN)
         {
-            // Hämta alla poäng för denna svårighetsgrad, sorterade
             var scores = await context.Highscores
                 .Where(s => s.Difficulty == difficulty)
                 .OrderByDescending(s => s.ConsecutiveWins)
                 .ToListAsync();
 
-            // Om det finns fler än 'topN' poäng...
             if (scores.Count > topN)
             {
-                // ...ta bort alla som hamnar utanför topplistan (dvs. hoppa över de 'topN' bästa)
                 var scoresToRemove = scores.Skip(topN);
                 context.Highscores.RemoveRange(scoresToRemove);
                 await context.SaveChangesAsync();
@@ -87,7 +78,7 @@ namespace Hangman.Core.Providers.Db
             using (var context = CreateContext())
             {
                 return await context.Highscores
-                    .AsNoTracking() // Vi behöver inte spåra ändringar här
+                    .AsNoTracking()
                     .Where(s => s.Difficulty == difficulty)
                     .OrderByDescending(s => s.ConsecutiveWins)
                     .ToListAsync();
@@ -100,7 +91,6 @@ namespace Hangman.Core.Providers.Db
             {
                 var topScores = new List<HighscoreEntry>();
 
-                // Använder Enum.GetValues() för att loopa genom alla WordDifficulty-värden
                 foreach (WordDifficulty difficulty in Enum.GetValues<WordDifficulty>())
                 {
                     var topForDifficulty = await context.Highscores

@@ -24,11 +24,9 @@ namespace Hangman.Console
         /// </summary>
         public async Task<char> GetGuess(IEnumerable<char> usedLetters, CancellationToken token)
         {
-            // Prompten skrivs nu ut av ConsoleRenderer.DrawGameScreen
-
+            // Prompten skrivs ut av ConsoleRenderer.DrawGameScreen
             while (!token.IsCancellationRequested)
             {
-                // Kolla om en tangent är tillgänglig
                 if (System.Console.KeyAvailable)
                 {
                     var key = System.Console.ReadKey(intercept: true);
@@ -36,7 +34,7 @@ namespace Hangman.Console
                     if (key.Key == ConsoleKey.Escape)
                     {
                         System.Console.WriteLine();
-                        return '\0'; // Signalera Escape
+                        return '\0'; // Escape
                     }
 
                     char letter = key.KeyChar;
@@ -46,7 +44,6 @@ namespace Hangman.Console
                         System.Console.ForegroundColor = ConsoleColor.Yellow;
                         System.Console.WriteLine(_strings.GetGuessInvalid(letter));
                         System.Console.ResetColor();
-                        // Be om ny gissning (prompten ritas om av GameController)
                         return (char)1; // Signalera ogiltig gissning
                     }
 
@@ -57,20 +54,17 @@ namespace Hangman.Console
                         System.Console.ForegroundColor = ConsoleColor.Yellow;
                         System.Console.WriteLine(_strings.GetGuessAlreadyGuessed(upperGuess));
                         System.Console.ResetColor();
-                        // Be om ny gissning (prompten ritas om av GameController)
                         return (char)1; // Signalera ogiltig gissning
                     }
 
-                    System.Console.WriteLine(upperGuess); // Eka den giltiga gissningen
-                    return upperGuess; // Returnera giltig gissning
+                    System.Console.WriteLine(upperGuess);
+                    return upperGuess;
                 }
 
-                // Vänta 100ms innan vi kollar efter tangent/avbrott igen
-                // Detta förhindrar att CPU:n snurrar i 100%
+                // Vänta 100ms för att undvika att CPU:n snurrar i 100%
                 await Task.Delay(100, token);
             }
 
-            // Om vi hamnar här har loopen avbrutits av CancellationToken
             throw new OperationCanceledException();
         }
 
@@ -83,13 +77,13 @@ namespace Hangman.Console
             string? name;
             while (true)
             {
-                name = GetInputString(prompt); // Använder GetInputString
+                name = GetInputString(prompt);
 
-                if (name == null) return null; // Användaren tryckte Escape
+                if (name == null) return null;
 
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    return name.Trim(); // Returnera trimmade namnet
+                    return name.Trim();
                 }
 
                 System.Console.ForegroundColor = ConsoleColor.Yellow;
@@ -114,7 +108,7 @@ namespace Hangman.Console
                 if (key.Key == ConsoleKey.Escape)
                 {
                     System.Console.WriteLine($"\n{_strings.CommonFeedbackCancelling}");
-                    return null; // Signalera Escape
+                    return null;
                 }
 
                 if (key.Key == ConsoleKey.Enter)
