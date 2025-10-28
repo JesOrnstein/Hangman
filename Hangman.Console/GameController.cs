@@ -158,6 +158,7 @@ namespace Hangman.Console
                 string? secret;
                 try
                 {
+                    // ÄNDRING 1/2: Anropar den uppdaterade metoden som returnerar string?
                     secret = await tournament.StartNewRoundAsync();
                 }
                 catch (NoCustomWordsFoundException ex)
@@ -166,15 +167,17 @@ namespace Hangman.Console
                     _renderer.WaitForKey(_strings.CommonPressAnyKeyToContinue);
                     return;
                 }
-                catch (InvalidOperationException) // Turneringen slut (förväntat)
-                {
-                    break;
-                }
+                // ÄNDRING 2/2: Tar bort catch för InvalidOperationException som användes för flödeskontroll
                 catch (Exception ex)
                 {
                     _renderer.ShowError(_strings.ErrorCouldNotFetchTournamentWord(ex.Message));
                     _renderer.WaitForKey(_strings.CommonPressAnyKeyToContinue);
                     return;
+                }
+
+                if (secret == null) // NY KONTROLL: Turneringen är avslutad (GameStatus har redan uppdaterats i TwoPlayerGame)
+                {
+                    break;
                 }
 
                 var (roundResult, feedback) = await PlayRoundWithFeedbackAsync(currentGuesser.Name, secret, currentGuesser.Lives);

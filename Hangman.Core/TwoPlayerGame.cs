@@ -63,9 +63,10 @@ namespace Hangman.Core
 
         /// <summary>
         /// Startar en ny spelrunda. Ordet hämtas från den konfigurerade ordkällan.
+        /// Returnerar det hemliga ordet, eller null om turneringen är avslutad.
         /// </summary>
         /// <returns>Det hemliga ordet.</returns>
-        public async Task<string> StartNewRoundAsync()
+        public async Task<string?> StartNewRoundAsync()
         {
             Player opponent = (CurrentGuesser == Player1) ? Player2 : Player1;
 
@@ -84,7 +85,7 @@ namespace Hangman.Core
 
             if (TournamentStatus != GameStatus.InProgress)
             {
-                throw new InvalidOperationException("Turneringen är avslutad.");
+                return null; // NYTT: Returnerar null istället för att kasta exception
             }
 
             string secret = await _wordProvider.GetWordAsync();

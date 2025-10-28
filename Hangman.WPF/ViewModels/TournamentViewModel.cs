@@ -141,10 +141,11 @@ namespace Hangman.WPF.ViewModels
             OnPropertyChanged(nameof(Player1));
             OnPropertyChanged(nameof(Player2));
 
+            string? word;
             try
             {
-                string word = await _tournament.StartNewRoundAsync();
-                _game.StartNew(word);
+                // ÄNDRING 1/3: Anropar den uppdaterade metoden som returnerar string?
+                word = await _tournament.StartNewRoundAsync();
             }
             catch (NoCustomWordsFoundException ex)
             {
@@ -158,11 +159,7 @@ namespace Hangman.WPF.ViewModels
                 _mainViewModel.NavigateToMenu();
                 return;
             }
-            catch (InvalidOperationException)
-            {
-                EndTournament();
-                return;
-            }
+            // ÄNDRING 2/3: Tar bort catch för InvalidOperationException som användes för flödeskontroll
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() =>
@@ -172,8 +169,18 @@ namespace Hangman.WPF.ViewModels
                         _strings.ErrorApiGeneric);
                 });
                 _game.StartNew("APIERROR");
+                UpdateUiProperties();
+                return;
             }
 
+            // ÄNDRING 3/3: Ny null-kontroll för att hantera att turneringen är avslutad
+            if (word == null)
+            {
+                EndTournament();
+                return;
+            }
+
+            _game.StartNew(word);
             UpdateUiProperties();
             SecondsLeft = 60;
             _timer.Start();
