@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System;
 using Hangman.Core.Exceptions;
-using System.Windows; // <-- NY USING FÖR DISPATCHER
+using System.Windows;
 using Hangman.Core.Providers.Api;
 using Hangman.Core.Providers.Local;
 using Hangman.Core.Localizations;
@@ -34,8 +34,7 @@ namespace Hangman.WPF.ViewModels
         };
         private const int AnimFrameCount = 12;
 
-        // --- Bindningsbara Egenskaper ---
-
+        // --- Bindningsbara Egenskaper (oförändrade) ---
         public LocalizationProvider Strings { get; }
 
         private string _maskedWord = "Laddar ord...";
@@ -78,6 +77,7 @@ namespace Hangman.WPF.ViewModels
             Strings = strings;
             _game = new Game(6);
 
+            // Event-prenumerationer
             _game.LetterGuessed += OnGameUpdated;
             _game.WrongLetterGuessed += OnGameUpdated;
             _game.GameEnded += OnGameEnded;
@@ -88,18 +88,28 @@ namespace Hangman.WPF.ViewModels
             BackToMenuFinalCommand = new RelayCommand(_ => ExitGame(saveScore: true));
 
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            _timer.Tick += Timer_Tick;
+            _timer.Tick += Timer_Tick; // Timer-prenumeration
 
             // Sätt laddningsmeddelande vid start
-            MaskedWord = _strings.FeedbackFetchingWord("..."); // ÄNDRAD
+            MaskedWord = _strings.FeedbackFetchingWord("...");
             Task.Run(StartNewRound);
         }
+
+        // --- NY METOD: Rensa events för att undvika minnesläckor ---
+        private void CleanupEvents()
+        {
+            _timer.Tick -= Timer_Tick;
+            _game.LetterGuessed -= OnGameUpdated;
+            _game.WrongLetterGuessed -= OnGameUpdated;
+            _game.GameEnded -= OnGameEnded;
+        }
+        // ------------------------------------------------------------
 
         private async Task StartNewRound()
         {
             IsGameInProgress = true;
             GameEndMessage = string.Empty;
-            MaskedWord = _strings.FeedbackFetchingWord("..."); // ÄNDRAD
+            MaskedWord = _strings.FeedbackFetchingWord("...");
             UsedLetters = "";
             GallowsImageSource = "/Images/stage_0.png";
             CreakAnimationText = string.Empty;
@@ -111,7 +121,6 @@ namespace Hangman.WPF.ViewModels
             }
             catch (NoCustomWordsFoundException ex)
             {
-                // FIX: Anropas via UI-tråden
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MessageBox.Show(
@@ -119,17 +128,18 @@ namespace Hangman.WPF.ViewModels
                         _strings.SelectWordSourceTitle
                     );
                 });
+                // Sker navigering bort, måste städa events
+                CleanupEvents();
                 _mainViewModel.NavigateToMenu();
                 return;
             }
             catch (Exception ex)
             {
-                // FIX: Anropas via UI-tråden
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MessageBox.Show(
                         _strings.ErrorCouldNotStartGame(ex.Message),
-                        _strings.ErrorApiGeneric // ÄNDRAD
+                        _strings.ErrorApiGeneric
                     );
                 });
                 _game.StartNew("APIERROR");
@@ -213,16 +223,22 @@ namespace Hangman.WPF.ViewModels
             GallowsImageSource = $"/Images/stage_{_game.Mistakes}.png";
         }
 
+        // --- MODIFIERAD METOD ---
         private async void ExitGame(bool saveScore)
         {
             _timer.Stop();
             CreakAnimationText = string.Empty;
+
+            // NYTT: Rensa eventhanterare innan vi navigerar bort
+            CleanupEvents();
+
             if (saveScore && _consecutiveWins > 0)
             {
                 await SaveHighscoreAsync();
             }
             _mainViewModel.NavigateToMenu();
         }
+        // ------------------------
 
         private async Task SaveHighscoreAsync()
         {
