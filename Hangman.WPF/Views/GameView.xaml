@@ -27,8 +27,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <Grid Margin="20"
-              Visibility="{Binding IsGameInProgress, Converter={StaticResource BoolToVis}}">
+        <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -60,46 +59,46 @@
                        FontStyle="Italic"
                        FontFamily="Courier New"/>
 
-            <TextBlock Grid.Row="3"
-                       Text="{Binding MaskedWord}"
-                       FontSize="48"
-                       FontFamily="Courier New"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
+            <StackPanel Grid.Row="3" Grid.RowSpan="4"
+                        Visibility="{Binding IsGameInProgress, Converter={StaticResource BoolToVis}}">
 
-            <TextBlock Grid.Row="4"
-                       Text="{Binding UsedLetters}"
-                       FontSize="16"
-                       Foreground="Gray"
-                       HorizontalAlignment="Center"
-                       Margin="0,10,0,20"/>
+                <TextBlock Text="{Binding MaskedWord}"
+                           FontSize="48"
+                           FontFamily="Courier New"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
 
-            <ItemsControl Grid.Row="5"
-              ItemsSource="{Binding KeyboardLetters}"
-              VerticalAlignment="Center">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid Rows="3" Columns="10" HorizontalAlignment="Center"></UniformGrid>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Content="{Binding}" Style="{StaticResource KeyboardButton}"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                <TextBlock Text="{Binding UsedLetters}"
+                           FontSize="16"
+                           Foreground="Gray"
+                           HorizontalAlignment="Center"
+                           Margin="0,10,0,20"/>
 
-            <Button Grid.Row="6"
-                    Content="{Binding Strings.GameButtonGiveUp}"
-                    Command="{Binding BackToMenuCommand}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Bottom"
-                    Margin="0,20"
-                    Padding="10"/>
+                <ItemsControl ItemsSource="{Binding KeyboardLetters}"
+                              VerticalAlignment="Center">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="3" Columns="10" HorizontalAlignment="Center"></UniformGrid>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding}" Style="{StaticResource KeyboardButton}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button Content="{Binding Strings.GameButtonGiveUp}"
+                        Command="{Binding BackToMenuCommand}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom"
+                        Margin="0,20"
+                        Padding="10"/>
+            </StackPanel>
         </Grid>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, 50, 0, 0">
             <StackPanel.Style>
                 <Style TargetType="StackPanel">
                     <Setter Property="Visibility" Value="Collapsed" />
