@@ -224,6 +224,9 @@ namespace Hangman.Core.Localizations
         public string HighscoreStatusNoneFoundWpf => "Inga highscores hittades.";
         public string TournamentHeaderLives => "Liv: ";
         public string TournamentHeaderWins => "Vinster: ";
+        public string DefaultPlayerName => "Spelare";
+        public string DefaultPlayer1Name => "Spelare 1";
+        public string DefaultPlayer2Name => "Spelare 2";
         // ==========================================
     }
 }

@@ -39,11 +39,12 @@ namespace Hangman.WPF.ViewModels
 
             if (IsTournamentMode)
             {
-                CurrentSettings.PlayerName = "Spelare 1";
+                CurrentSettings.PlayerName = Strings.DefaultPlayer1Name;
+                CurrentSettings.PlayerName2 = Strings.DefaultPlayer2Name;
             }
             else
             {
-                CurrentSettings.PlayerName = "Spelare";
+                CurrentSettings.PlayerName = Strings.DefaultPlayerName;
             }
 
             StartGameCommand = new RelayCommand(StartGame);

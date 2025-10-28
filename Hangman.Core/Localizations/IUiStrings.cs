@@ -178,6 +178,11 @@ namespace Hangman.Core.Localizations
         string HighscoreStatusNoneFoundWpf { get; }
         string TournamentHeaderLives { get; }
         string TournamentHeaderWins { get; }
+
+        // ========== NYA STRÄNGAR FÖR WPF ==========
+        string DefaultPlayerName { get; }
+        string DefaultPlayer1Name { get; }
+        string DefaultPlayer2Name { get; }
         // ==========================================
     }
 }

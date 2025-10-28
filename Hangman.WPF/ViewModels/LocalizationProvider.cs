@@ -211,6 +211,9 @@ namespace Hangman.WPF.ViewModels
         public string HighscoreStatusNoneFoundWpf => _currentStrategy.HighscoreStatusNoneFoundWpf;
         public string TournamentHeaderLives => _currentStrategy.TournamentHeaderLives;
         public string TournamentHeaderWins => _currentStrategy.TournamentHeaderWins;
+        public string DefaultPlayerName => _currentStrategy.DefaultPlayerName;
+        public string DefaultPlayer1Name => _currentStrategy.DefaultPlayer1Name;
+        public string DefaultPlayer2Name => _currentStrategy.DefaultPlayer2Name;
         #endregion
     }
 }
