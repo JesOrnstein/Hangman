@@ -141,6 +141,9 @@ namespace Hangman.WPF.ViewModels
             UpdateUiProperties();
             SecondsLeft = 60;
             _timer.Start();
+
+            // Fix: Tvinga UI att utvärdera GuessCommand.CanExecute igen, vilket återställer knapparna.
+            if (GuessCommand is RelayCommand rc) rc.RaiseCanExecuteChanged();
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
