@@ -100,7 +100,8 @@ namespace Hangman.WPF.ViewModels
             _game.GameEnded += OnRoundEnded;
 
             GuessCommand = new RelayCommand(MakeGuess, CanGuess);
-            BackToMenuCommand = new RelayCommand(_ => _mainViewModel.NavigateToMenu());
+            // ÄNDRAD: Anropar ExitTournament-metoden
+            BackToMenuCommand = new RelayCommand(_ => ExitTournament());
             NextRoundCommand = new RelayCommand(async _ => await StartNewRound());
 
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -111,6 +112,29 @@ namespace Hangman.WPF.ViewModels
             // VIKTIGT: starta rundan asynkront på UI-tråden, inte Task.Run
             _ = StartNewRound();
         }
+
+        // --- NY METOD: Rensa events för att undvika minnesläckor ---
+        private void CleanupEvents()
+        {
+            _timer.Stop();
+            _timer.Tick -= Timer_Tick;
+
+            if (_game != null)
+            {
+                _game.LetterGuessed -= OnGameUpdated;
+                _game.WrongLetterGuessed -= OnGameUpdated;
+                _game.GameEnded -= OnRoundEnded;
+            }
+        }
+        // -----------------------------------------------------------
+
+        // --- NY METOD: Hanterar avslutning och navigering ---
+        private void ExitTournament()
+        {
+            CleanupEvents();
+            _mainViewModel.NavigateToMenu();
+        }
+        // -----------------------------------------------------
 
         private async Task StartNewRound()
         {
@@ -139,6 +163,7 @@ namespace Hangman.WPF.ViewModels
                         _strings.ErrorNoCustomWordsFound(ex.Difficulty, ex.Language),
                         _strings.SelectWordSourceTitle);
                 });
+                CleanupEvents(); // Rensa events innan navigering
                 _mainViewModel.NavigateToMenu();
                 return;
             }
@@ -167,7 +192,10 @@ namespace Hangman.WPF.ViewModels
         {
             IsTournamentInProgress = false;
             IsRoundInProgress = false;
-            _timer.Stop();
+
+            // ÄNDRAD: Rensa events här också, ifall turneringen avslutas naturligt (utan ExitTournament)
+            CleanupEvents();
+
             CreakAnimationText = string.Empty;
 
             if (_tournament.TournamentStatus == GameStatus.Draw)
