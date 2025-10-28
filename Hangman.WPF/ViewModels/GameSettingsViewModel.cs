@@ -16,7 +16,17 @@ namespace Hangman.WPF.ViewModels
 
         public bool IsTournamentMode { get; }
 
-        public IEnumerable<WordDifficulty> Difficulties => System.Enum.GetValues<WordDifficulty>();
+        // NY IMPLEMENTATION: Returnerar KeyValuePair<WordDifficulty, string> för lokaliserade namn
+        public IEnumerable<KeyValuePair<WordDifficulty, string>> LocalizedDifficulties
+        {
+            get
+            {
+                yield return new KeyValuePair<WordDifficulty, string>(WordDifficulty.Easy, Strings.FeedbackDifficultyEasy);
+                yield return new KeyValuePair<WordDifficulty, string>(WordDifficulty.Medium, Strings.FeedbackDifficultyMedium);
+                yield return new KeyValuePair<WordDifficulty, string>(WordDifficulty.Hard, Strings.FeedbackDifficultyHard);
+            }
+        }
+
         public Dictionary<WordSource, string> WordSources { get; } = new()
         {
             { WordSource.Api, "Engelska (API)" },
