@@ -32,6 +32,9 @@ namespace Hangman.Core
 
         public string DifficultyName => $"Svensk Lokal ({_difficulty})";
 
+        // IMPLEMENTATION: Nu publik och läsbar via interfacet
+        public WordDifficulty Difficulty => _difficulty;
+
         /// <summary>
         /// Returnerar ett slumpmässigt ord från listan, filtrerat efter svårighetsgrad.
         /// </summary>

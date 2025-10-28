@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Hangman.Core.Models;
 
 /*
   Ett gränssnitt för att hämta ord till spelet asynkront.
@@ -17,5 +18,8 @@ namespace Hangman.Core.Providers.Interface
         Task<string> GetWordAsync(CancellationToken ct = default);
 
         string DifficultyName { get; }
+
+        // Exponerar svårighetsgraden publikt för att undvika Reflection i ViewModel.
+        WordDifficulty Difficulty { get; }
     }
 }

@@ -29,6 +29,9 @@ namespace Hangman.Core.Providers.Local
 
         public string DifficultyName => $"Anpassad Ordlista ({_language} - {_difficulty})";
 
+        // IMPLEMENTATION: Nu publik och läsbar via interfacet
+        public WordDifficulty Difficulty => _difficulty;
+
         /// <summary>
         /// Sparar ett nytt ord till den anpassade ordlistan i databasen.
         /// </summary>

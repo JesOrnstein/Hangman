@@ -26,6 +26,9 @@ namespace Hangman.Core.Providers.Api
 
         public string DifficultyName => $"API ({_difficulty})";
 
+        // IMPLEMENTATION: Nu publik och läsbar via interfacet
+        public WordDifficulty Difficulty => _difficulty;
+
         public async Task<string> GetWordAsync(CancellationToken ct = default)
         {
             int minLength, maxLength;

@@ -11,6 +11,7 @@ using System.Windows;
 using Hangman.Core.Providers.Api;
 using Hangman.Core.Providers.Local;
 using Hangman.Core.Localizations;
+// using System.Reflection; // Reflection är borttagen
 
 namespace Hangman.WPF.ViewModels
 {
@@ -235,23 +236,8 @@ namespace Hangman.WPF.ViewModels
 
         private async Task SaveHighscoreAsync()
         {
-            WordDifficulty difficulty;
-            if (_wordProvider is ApiWordProvider api)
-            {
-                difficulty = (WordDifficulty)api.GetType().GetField("_difficulty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(api)!;
-            }
-            else if (_wordProvider is WordProvider local)
-            {
-                difficulty = (WordDifficulty)local.GetType().GetField("_difficulty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(local)!;
-            }
-            else if (_wordProvider is CustomWordProvider custom)
-            {
-                difficulty = (WordDifficulty)custom.GetType().GetField("_difficulty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(custom)!;
-            }
-            else
-            {
-                return;
-            }
+            // FIX: Använder nu det publika interfacet istället för Reflection.
+            WordDifficulty difficulty = _wordProvider.Difficulty;
 
             var newScore = new HighscoreEntry
             {
