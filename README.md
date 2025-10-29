@@ -223,7 +223,7 @@ Delar av denna kodbas har skapats, refaktorerats eller assisterats med hjälp av
 
 Verktyg som använts
 ChatGPT (för utformning av komplexa algoritmer och dokumentation).
-Gemini (för autokomplettering, boilerplate och tester).
+Copilot (för autokomplettering, boilerplate och tester).
 Omfattning av AI-assistans
 AI har huvudsakligen använts för:
 
